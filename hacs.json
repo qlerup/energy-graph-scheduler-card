@@ -1,0 +1,6 @@
+{
+  "name": "Energy Graph Scheduler Card",
+  "filename": "energy-graph-scheduler-card.js",
+  "homeassistant": "2024.12.0",
+  "render_readme": true
+}
