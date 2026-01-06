@@ -1,5 +1,7 @@
 # Energy Graph Scheduler Card (Home Assistant)
 
+<img width="497" height="409" alt="image" src="https://github.com/user-attachments/assets/933d55f4-b8cc-4717-a543-07cfb25b1758" />
+
 Et simpelt Lovelace custom card, der viser en scrollbar pris-graf (time-bars) for en valgt strømpris-sensor og kan foreslå/markere de billigste sammenhængende timer for dine egne “sektioner” (fx *Opvasker 3 timer*).
 
 Kortet er lavet til at kunne indlæses som en almindelig Home Assistant resource af typen **JavaScript** (ingen ESM imports).
