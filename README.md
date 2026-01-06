@@ -27,12 +27,16 @@ The card is designed to be loaded as a standard Home Assistant **JavaScript** re
 
 ### Option A: Install via HACS (Custom Repository)
 
+[![Open your Home Assistant instance and add this repository to HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=qlerup&repository=energy-graph-scheduler-card&category=plugin)
+
 If you have HACS installed, you can add this card directly from GitHub as a custom repository:
+
+Tip: use the “My Home Assistant” button at the top of this README.
 
 1. Open **HACS** in Home Assistant.
 2. Click the **three dots** (top right) → **Custom repositories**.
 3. Paste the GitHub repository URL.
-4. Select **Category: Dashboard**.
+4. Select **Category: Plugin** (Lovelace / Dashboard).
 5. Click **Add**.
 6. Find the newly added repository in HACS and click **Download**.
 
@@ -40,7 +44,7 @@ After downloading, add the card as a Lovelace resource:
 
 - *Settings → Dashboards → Resources*
 - Add:
-  - URL: `/hacsfiles/energy-graph-scheduler-card/energy-graph-scheduler-card.js` (the exact path depends on the repo name)
+  - URL: `/hacsfiles/energy-graph-scheduler-card/energy-graph-scheduler-card.js`
   - Type: `JavaScript Module` **or** `JavaScript`
 
 Then refresh your browser.
