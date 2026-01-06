@@ -1,115 +1,115 @@
 # Energy Graph Scheduler Card (Home Assistant)
 
-<img width="497" height="409" alt="image" src="https://github.com/user-attachments/assets/933d55f4-b8cc-4717-a543-07cfb25b1758" />
+<img width="501" height="411" alt="image" src="https://github.com/user-attachments/assets/1e1ebe96-2156-4ceb-814e-51c1751a7167" />
 
-Et simpelt Lovelace custom card, der viser en scrollbar pris-graf (time-bars) for en valgt strømpris-sensor og kan foreslå/markere de billigste sammenhængende timer for dine egne “sektioner” (fx *Opvasker 3 timer*).
+A simple Lovelace custom card that shows a horizontally scrollable hourly price graph (bar chart) for a selected electricity price sensor, and can suggest/highlight the cheapest contiguous hours for your own “sections” (for example *Dishwasher 3 hours*).
 
-Kortet er lavet til at kunne indlæses som en almindelig Home Assistant resource af typen **JavaScript** (ingen ESM imports).
+The card is designed to be loaded as a standard Home Assistant **JavaScript** resource (no ESM imports).
 
-## Funktioner
+## Features
 
-- **Prisgraf pr. time** som farvede søjler (lav/mid/høj) baseret på prisniveauer.
-- **Min / Nu / Højeste** vises over grafen.
-- **“Nu”-markør** (lodret linje + label) ved nærmeste timepunkt.
-- **Tooltip** når du holder musen over en bar (viser tidsinterval + værdi + enhed).
-- **Flere dage understøttes**:
-  - Samler typisk *i dag + i morgen* hvis sensoren har begge dele.
-  - Viser datolabel ved midnat og en separatorlinje.
-- **“Billigste tider” sektioner**:
-  - Opret dine egne sektioner med *navn* og *antal timer*.
-  - Kortet finder den billigste sammenhængende periode (fra “nu” og frem) for hver sektion.
-  - Klik på en sektion for at markere dens billigste vindue på grafen.
-- **Settings modal** i kortet til at tilføje/slette sektioner.
-- **Gemmer sektioner pr. entity i browserens localStorage** (hurtigt og uden ekstra HA-helpers).
-- **Editor med entity-picker** (vælg sensor) + valgfri titel.
+- **Hourly price graph** as color-coded bars (low/mid/high) based on price tiers.
+- **Min / Now / Max** shown above the graph.
+- **“Now” marker** (vertical line + label) at the nearest hour.
+- **Tooltip** on hover (shows time range + value + unit).
+- **Multi-day support**:
+  - Typically combines *today + tomorrow* if the sensor provides both.
+  - Shows a date label at midnight and a separator line.
+- **“Cheapest times” sections**:
+  - Create your own sections with a *name* and a *duration (hours)*.
+  - The card finds the cheapest contiguous window (from “now” and forward) for each section.
+  - Click a section to highlight its cheapest window on the chart.
+- **Settings modal** inside the card to add/remove sections.
+- **Stores sections per entity in browser localStorage** (fast and without extra HA helpers).
+- **Editor with entity picker** (pick sensor) + optional title.
 
 ## Installation
 
-1. Læg filen her i din HA config:
+1. Place the file here in your HA config:
 
 - `www/energy-graph-scheduler-card.js`
 
-2. Tilføj den som resource i Home Assistant:
+2. Add it as a resource in Home Assistant:
 
-**UI (anbefalet)**
-- *Indstillinger → Dashboards → Ressourcer*
-- Tilføj:
+**UI (recommended)**
+- *Settings → Dashboards → Resources*
+- Add:
   - URL: `/local/energy-graph-scheduler-card.js`
-  - Type: `JavaScript Module` **eller** `JavaScript` (afhænger af din HA version). Kortet er lavet til at virke som almindelig `javascript` resource.
+  - Type: `JavaScript Module` **or** `JavaScript` (depends on your HA version). The card is intended to work as a plain `javascript` resource.
 
-3. Genindlæs (refresh) din browser.
+3. Reload (refresh) your browser.
 
-## Konfiguration
+## Configuration
 
-Minimal eksempel:
-
-```yaml
-type: custom:energy-graph-scheduler-card
-entity: sensor.din_strompris_sensor
-```
-
-Med titel:
+Minimal example:
 
 ```yaml
 type: custom:energy-graph-scheduler-card
-title: Strømpris
-entity: sensor.din_strompris_sensor
+entity: sensor.your_electricity_price_sensor
 ```
 
-## Brug (sektioner / billigste tider)
+With a title:
 
-1. Åbn kortet og klik **Settings**.
-2. Under *Tilføj time-sektion*:
-   - Skriv et navn (fx `Opvasker`)
-   - Vælg `Timeinterval` (1–24 timer)
-   - Klik **Tilføj**
-3. Kortet viser nu et område “Billigste tider” med forslag.
-4. Klik på en sektion for at markere dens billigste timevindue i grafen.
+```yaml
+type: custom:energy-graph-scheduler-card
+title: Electricity price
+entity: sensor.your_electricity_price_sensor
+```
 
-### Vigtigt om lagring
+## Usage (sections / cheapest times)
 
-- Sektioner gemmes i **browserens localStorage** under en nøgle pr. entity.
-- Det betyder typisk:
-  - Sektioner er **per device/browser**, ikke nødvendigvis delt mellem telefon/PC.
-  - Rydning af browserdata kan fjerne sektionerne.
+1. Open the card and click **Settings**.
+2. Under *Add time section*:
+   - Enter a name (e.g. `Dishwasher`)
+   - Choose `Duration` (1–24 hours)
+   - Click **Add**
+3. The card will now show a “Cheapest times” area with suggestions.
+4. Click a section to highlight its cheapest time window on the chart.
 
-## Forventet dataformat (sensor attributes)
+### Important: storage
 
-Kortet forsøger at være robust over for forskellige strømpris-integrationer.
+- Sections are stored in **browser localStorage** under a per-entity key.
+- This usually means:
+  - Sections are **per device/browser**, not automatically shared between phone/PC.
+  - Clearing browser data may remove your sections.
 
-Det leder efter en liste i entity attributes under typiske nøgler som fx:
+## Expected data format (sensor attributes)
+
+The card tries to be robust across different electricity price integrations.
+
+It looks for an array/list in the entity attributes under common keys such as:
 - `raw_today`, `today`, `prices`, `price`, `data`, `values`
-- samt (hvis tilgængelig) `raw_tomorrow` eller `tomorrow`
+- and (if available) `raw_tomorrow` or `tomorrow`
 
-Hvert element i listen kan være:
-- et tal (pris), eller
-- et objekt med en værdi i en af disse nøgler: `value`, `price`, `val`, `v`, `amount`, `y`
+Each item in the list can be:
+- a number (price), or
+- an object with a value in one of these keys: `value`, `price`, `val`, `v`, `amount`, `y`
 
-Tidsstempel forsøges læst fra nøgler som fx:
+Timestamps are attempted from keys such as:
 - `hour`, `start`, `start_time`, `startTime`, `from`, `time`, `date`, `datetime`, `begin`, `t`
 
-Hvis der ikke findes timestamps, antages data at være **sekventielle timer**.
+If no timestamps exist, the data is treated as **sequential hourly values**.
 
-Enheden vises fra `unit_of_measurement` (eller `unit`).
+The unit is displayed from `unit_of_measurement` (or `unit`).
 
-## Kendte begrænsninger
+## Known limitations
 
-- “Billigste tider” beregnes **fra nu og frem** (dvs. ikke historiske timer).
-- Hvis datapunkter mangler (null/ikke numeriske), kan nogle vinduer ikke beregnes.
-- Sektioner synkroniseres ikke via Home Assistant (kun localStorage).
+- “Cheapest times” is computed **from now and forward** (not historical hours).
+- If some datapoints are missing (null/non-numeric), certain windows cannot be calculated.
+- Sections are not synchronized via Home Assistant (localStorage only).
 
-## Fejlsøgning
+## Troubleshooting
 
-- Åbn browserens Developer Tools → Console, og tjek efter:
+- Open your browser Developer Tools → Console, and look for:
   - `ENERGY-GRAPH-SCHEDULER-CARD ...`
-- Hvis kortet ikke dukker op:
-  - Kontrollér at resource-URL er korrekt: `/local/energy-graph-scheduler-card.js`
-  - Hard refresh (Ctrl+F5) efter opdatering af filen.
+- If the card doesn’t show up:
+  - Verify the resource URL is correct: `/local/energy-graph-scheduler-card.js`
+  - Hard refresh (Ctrl+F5) after updating the file.
 
 ## Version
 
-Versionen logges i console og findes i koden som `EGS_CARD_VERSION`.
+The version is logged in the console and is defined in the code as `EGS_CARD_VERSION`.
 
 ---
 
-Hvis du vil, kan jeg også tilføje et lille eksempel til README’en baseret på din *konkrete* sensor (hvilke attribute keys den bruger), så afsnittet “Forventet dataformat” matcher din opsætning 1:1.
+If you want, I can also add a small README example based on your *specific* price sensor (which attribute keys it uses), so the “Expected data format” section matches your setup 1:1.
