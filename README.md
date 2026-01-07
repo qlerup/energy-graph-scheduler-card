@@ -135,7 +135,3 @@ The unit is displayed from `unit_of_measurement` (or `unit`).
 ## Version
 
 The version is logged in the console and is defined in the code as `EGS_CARD_VERSION`.
-
----
-
-If you want, I can also add a small README example based on your *specific* price sensor (which attribute keys it uses), so the “Expected data format” section matches your setup 1:1.
