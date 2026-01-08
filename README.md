@@ -2,6 +2,12 @@
 
 <img width="501" height="411" alt="image" src="https://github.com/user-attachments/assets/1e1ebe96-2156-4ceb-814e-51c1751a7167" />
 
+## Support this project
+
+If you find this project useful, you can support me on Ko-fi 💙  
+
+[![Buy me some debugging time on Ko-fi](https://img.shields.io/badge/%F0%9F%90%9E_Buy_me_some_debugging_time_on-Ko--fi-2ea44f?style=for-the-badge)](https://ko-fi.com/qlerup)
+
 A simple Lovelace custom card that shows a horizontally scrollable hourly price graph (bar chart) for a selected electricity price sensor, and can suggest/highlight the cheapest contiguous hours for your own “sections” (for example *Dishwasher 3 hours*).
 
 The card is designed to be loaded as a standard Home Assistant **JavaScript** resource (no ESM imports).
