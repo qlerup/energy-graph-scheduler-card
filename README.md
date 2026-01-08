@@ -27,7 +27,7 @@ The card is designed to be loaded as a standard Home Assistant **JavaScript** re
 
 ### Option A: Install via HACS (Custom Repository)
 
-[![Open your Home Assistant instance and add this repository to HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=qlerup&repository=energy-graph-scheduler-card&category=plugin)
+[![Open this repository in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=qlerup&repository=energy-graph-scheduler-card)
 
 If you have HACS installed, you can add this card directly from GitHub as a custom repository:
 
