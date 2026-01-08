@@ -1,5 +1,7 @@
 # Energy Graph Scheduler Card (Home Assistant)
 
+[![hacs\_badge](https://img.shields.io/badge/HACS-Default-blue.svg)](https://hacs.xyz)
+
 <img width="501" height="411" alt="image" src="https://github.com/user-attachments/assets/1e1ebe96-2156-4ceb-814e-51c1751a7167" />
 
 ## Support this project
