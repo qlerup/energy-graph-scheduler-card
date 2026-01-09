@@ -131,6 +131,16 @@ The unit is displayed from `unit_of_measurement` (or `unit`).
 - If some datapoints are missing (null/non-numeric), certain windows cannot be calculated.
 - Sections are not synchronized via Home Assistant (localStorage only).
 
+## Optional: sync sections between devices/users
+
+By default, sections are stored in **browser localStorage** (per device/browser).
+
+If you want the card to **share/sync your sections across devices and users** in the same Home Assistant instance, install the companion sync integration:
+
+- https://github.com/qlerup/energy-graph-scheduler-sync
+
+After installing the sync integration, enable **Sync** in the card editor.
+
 ## Troubleshooting
 
 - Open your browser Developer Tools → Console, and look for:
