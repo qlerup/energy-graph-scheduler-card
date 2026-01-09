@@ -4,6 +4,7 @@
 const EGS_CARD_TAG = "energy-graph-scheduler-card";
 const EGS_EDITOR_TAG = "energy-graph-scheduler-card-editor";
 const EGS_CARD_VERSION = "0.1.0";
+const EGS_SYNC_DOMAIN = "energy_graph_scheduler";
 
 /* ----------------- LIGHTWEIGHT PICKER (tt-entity-picker) -----------------
  * Use the same custom entity picker concept as used in other cards in this repo.
@@ -480,18 +481,55 @@ function egsStorageKey(entityId) {
   return `egs.sections.v1.${egsSafeText(entityId)}`;
 }
 
+function egsNormalizeSections(raw) {
+  if (!Array.isArray(raw)) return [];
+  const out = [];
+  for (const s of raw) {
+    if (!s || typeof s !== "object") continue;
+    const name = egsSafeText(s.name).trim();
+    if (!name) continue;
+    const hours = egsClamp(Number(s.hours) || 0, 1, 24);
+    out.push({ name, hours });
+  }
+  // De-dupe by name (first wins)
+  const seen = new Set();
+  const uniq = [];
+  for (const s of out) {
+    if (seen.has(s.name)) continue;
+    seen.add(s.name);
+    uniq.push(s);
+  }
+  return uniq.slice(0, 100);
+}
+
+function egsSyncEnabled(config) {
+  return !!(config && config.sync);
+}
+
+function egsWsSend(hass, msg) {
+  try {
+    if (hass?.connection?.sendMessagePromise) {
+      return hass.connection.sendMessagePromise(msg);
+    }
+  } catch {
+    // ignore
+  }
+  try {
+    if (typeof hass?.callWS === "function") {
+      return hass.callWS(msg);
+    }
+  } catch {
+    // ignore
+  }
+  return Promise.reject(new Error("No websocket available"));
+}
+
 function egsLoadSections(entityId) {
   try {
     const raw = localStorage.getItem(egsStorageKey(entityId));
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed
-      .map((s) => ({
-        name: egsSafeText(s?.name).trim(),
-        hours: egsClamp(Number(s?.hours) || 0, 1, 24),
-      }))
-      .filter((s) => s.name);
+    return egsNormalizeSections(parsed);
   } catch {
     return [];
   }
@@ -594,6 +632,13 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     this._graphScrollRatio = null;
     this._lastEntityId = "";
     this._lastEntityRenderKey = null;
+    this._sectionsLoadKey = null;
+
+    this._syncUnsub = null;
+    this._syncSubKey = null;
+
+    this._syncPollTimer = null;
+    this._syncPollKey = null;
   }
 
   static getStubConfig() {
@@ -601,6 +646,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       type: `custom:${EGS_CARD_TAG}`,
       title: "Energy Graph Scheduler",
       entity: "",
+      sync: false,
     };
   }
 
@@ -608,23 +654,199 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     if (!config || typeof config !== "object") throw new Error("Invalid configuration");
     const stub = EnergyGraphSchedulerCard.getStubConfig();
     const prevEntity = this._config?.entity || "";
+    const prevSync = !!this._config?.sync;
     this._config = {
       ...stub,
       ...(config || {}),
       // Ensure entity/title defaults are always strings
       title: config.title ?? stub.title,
       entity: config.entity || "",
+      sync: !!config.sync,
       // Never lose type
       type: config.type || stub.type,
     };
 
     // If entity changed, allow re-render even if hass is spamming updates.
     const nextEntity = this._config?.entity || "";
-    if (prevEntity !== nextEntity) {
+    const nextSync = !!this._config?.sync;
+    if (prevEntity !== nextEntity || prevSync !== nextSync) {
       this._lastEntityId = "";
       this._lastEntityRenderKey = null;
+      this._sectionsLoadKey = null;
+
+      // Recreate websocket subscription if needed.
+      this._syncSubKey = null;
+      this._teardownSyncSubscription();
     }
     this._render();
+  }
+
+  disconnectedCallback() {
+    this._teardownSyncSubscription();
+    this._stopSyncPolling();
+  }
+
+  async _teardownSyncSubscription() {
+    const unsub = this._syncUnsub;
+    this._syncUnsub = null;
+    if (typeof unsub === "function") {
+      try {
+        await unsub();
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  _stopSyncPolling() {
+    if (this._syncPollTimer) {
+      clearInterval(this._syncPollTimer);
+      this._syncPollTimer = null;
+    }
+    this._syncPollKey = null;
+  }
+
+  _ensureSyncPolling(entityId) {
+    const ent = egsSafeText(entityId);
+    const sync = egsSyncEnabled(this._config);
+    if (!sync || !ent || !this._hass) {
+      this._stopSyncPolling();
+      return;
+    }
+
+    const key = `${ent}|sync`;
+    if (this._syncPollKey === key && this._syncPollTimer) return;
+
+    this._stopSyncPolling();
+    this._syncPollKey = key;
+
+    const tick = () => {
+      // Only poll while config is still the same
+      if (this._syncPollKey !== key) return;
+      if (!egsSyncEnabled(this._config)) return;
+      if (egsSafeText(this._config?.entity) !== ent) return;
+
+      egsWsSend(this._hass, { type: `${EGS_SYNC_DOMAIN}/get_sections`, entity_id: ent })
+        .then((res) => {
+          if (this._syncPollKey !== key) return;
+          const secs = egsNormalizeSections(res?.sections);
+          const cur = Array.isArray(this._sections) ? this._sections : [];
+          // Cheap deep-eq for small arrays
+          const a = JSON.stringify(cur);
+          const b = JSON.stringify(secs);
+          if (a === b) return;
+          this._sections = secs;
+          egsSaveSections(ent, secs);
+          this._render();
+        })
+        .catch(() => {
+          // ignore
+        });
+    };
+
+    // Poll every 10s; cheap and avoids hard refresh.
+    this._syncPollTimer = setInterval(tick, 10000);
+  }
+
+  async _ensureSyncSubscription(entityId) {
+    const ent = egsSafeText(entityId);
+    const sync = egsSyncEnabled(this._config);
+    if (!sync || !ent || !this._hass?.connection?.subscribeMessage) {
+      if (this._syncUnsub) this._teardownSyncSubscription();
+      this._syncSubKey = null;
+      return;
+    }
+
+    const key = `${ent}|sync`;
+    if (this._syncSubKey === key && this._syncUnsub) return;
+
+    await this._teardownSyncSubscription();
+    this._syncSubKey = key;
+
+    try {
+      const conn = this._hass.connection;
+      const unsub = await conn.subscribeMessage(
+        (msg) => {
+          if (msg && msg.type === "event" && msg.event) {
+            const ev = msg.event;
+            if (egsSafeText(ev.entity_id) !== ent) return;
+            const secs = egsNormalizeSections(ev.sections);
+            this._sections = secs;
+            egsSaveSections(ent, secs);
+            this._render();
+          }
+        },
+        { type: `${EGS_SYNC_DOMAIN}/subscribe_sections`, entity_id: ent }
+      );
+      this._syncUnsub = unsub;
+    } catch {
+      // If subscription fails, keep local-only behavior.
+      this._syncSubKey = null;
+    }
+  }
+
+  _requestSectionsLoad(entityId) {
+    const ent = egsSafeText(entityId);
+    if (!ent) return;
+
+    const sync = egsSyncEnabled(this._config);
+    const key = `${ent}|${sync ? "sync" : "local"}`;
+    if (this._sectionsLoadKey === key) return;
+    this._sectionsLoadKey = key;
+
+    const local = egsLoadSections(ent);
+    // Fast path: show local immediately
+    this._sections = local;
+
+    // Ensure we receive live updates (no hard refresh needed)
+    this._ensureSyncSubscription(ent);
+    this._ensureSyncPolling(ent);
+
+    if (!sync) return;
+    const hass = this._hass;
+    if (!hass) return;
+
+    egsWsSend(hass, { type: `${EGS_SYNC_DOMAIN}/get_sections`, entity_id: ent })
+      .then((res) => {
+        // Ignore stale responses.
+        if (this._sectionsLoadKey !== key) return;
+        if (egsSafeText(this._config?.entity) !== ent) return;
+
+        const secs = egsNormalizeSections(res?.sections);
+        if (secs.length) {
+          this._sections = secs;
+          egsSaveSections(ent, secs);
+          this._render();
+          return;
+        }
+
+        // If backend is empty but local has data, push it once.
+        if (local.length) {
+          egsWsSend(hass, {
+            type: `${EGS_SYNC_DOMAIN}/set_sections`,
+            entity_id: ent,
+            sections: local,
+          }).catch(() => {});
+        }
+      })
+      .catch(() => {
+        // Keep local on error
+      });
+  }
+
+  _persistSections(entityId, sections) {
+    const ent = egsSafeText(entityId);
+    if (!ent) return;
+    const next = egsNormalizeSections(sections || []);
+
+    // Always cache locally as fallback
+    egsSaveSections(ent, next);
+
+    if (!egsSyncEnabled(this._config)) return;
+    const hass = this._hass;
+    if (!hass) return;
+
+    egsWsSend(hass, { type: `${EGS_SYNC_DOMAIN}/set_sections`, entity_id: ent, sections: next }).catch(() => {});
   }
 
   set hass(hass) {
@@ -651,7 +873,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       if (this._lastEntityId !== entityId) {
         this._lastEntityId = entityId;
         this._lastEntityRenderKey = key;
-        this._sections = egsLoadSections(entityId);
+        this._requestSectionsLoad(entityId);
         this._render();
         return;
       }
@@ -660,6 +882,10 @@ class EnergyGraphSchedulerCard extends HTMLElement {
         this._lastEntityRenderKey = key;
         this._render();
       }
+
+      // Keep subscription alive even when only hass ticks.
+      this._ensureSyncSubscription(entityId);
+      this._ensureSyncPolling(entityId);
     } catch {
       this._render();
     }
@@ -673,7 +899,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     // Ensure sections are loaded at least once.
     try {
       const ent = this._config?.entity;
-      if (ent) this._sections = egsLoadSections(ent);
+      if (ent) this._requestSectionsLoad(ent);
     } catch {
       // ignore
     }
@@ -696,15 +922,15 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     if (!nm) return;
     const next = [...(this._sections || [])];
     next.push({ name: nm, hours: h });
-    this._sections = next;
-    egsSaveSections(entityId, next);
+    this._sections = egsNormalizeSections(next);
+    this._persistSections(entityId, this._sections);
     this._render();
   }
 
   _removeSection(entityId, idx) {
     const next = [...(this._sections || [])].filter((_, i) => i !== idx);
-    this._sections = next;
-    egsSaveSections(entityId, next);
+    this._sections = egsNormalizeSections(next);
+    this._persistSections(entityId, this._sections);
     this._render();
   }
 
@@ -1302,6 +1528,7 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
       type: (config && config.type) || stub.type,
       title: (config && config.title) != null ? config.title : stub.title,
       entity: (config && config.entity) || "",
+      sync: !!(config && config.sync),
     };
     if (this._loaded) this._applyConfigToUi();
     else this._render();
@@ -1348,6 +1575,7 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
     if (!this.shadowRoot) return;
     const title = egsSafeText(this._config?.title ?? "Energy Graph Scheduler");
     const entity = egsSafeText(this._config?.entity ?? "");
+    const sync = !!this._config?.sync;
 
     const titleEl = this.shadowRoot.querySelector("input.title");
     if (titleEl && titleEl.value !== title) titleEl.value = title;
@@ -1360,6 +1588,9 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
         // ignore
       }
     }
+
+    const syncEl = this.shadowRoot.querySelector("input.sync");
+    if (syncEl && syncEl.checked !== sync) syncEl.checked = sync;
   }
 
   _render() {
@@ -1368,6 +1599,7 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
     const hass = this._hass;
     const entity = egsSafeText(this._config?.entity);
     const title = egsSafeText(this._config?.title ?? "Energy Graph Scheduler");
+    const sync = !!this._config?.sync;
 
     const css = `
       :host{ display:block; padding: 8px 0; }
@@ -1375,6 +1607,11 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
       .label{ color: var(--secondary-text-color); font-size: 12px; margin: 2px 0 6px; }
       input{ width:100%; height:36px; box-sizing:border-box; border:1px solid var(--divider-color); border-radius:8px; padding:6px 10px; background: var(--card-background-color); color: var(--primary-text-color); }
       input:focus{ outline:none; border-color: var(--primary-color); box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary-color) 35%, transparent); }
+      .row{ display:flex; align-items:center; justify-content:space-between; gap: 12px; border:1px solid var(--divider-color); border-radius:10px; padding: 10px; }
+      .row .txt{ display:flex; flex-direction:column; gap: 2px; }
+      .row .t1{ color: var(--primary-text-color); font-weight: 600; font-size: 13px; }
+      .row .t2{ color: var(--secondary-text-color); font-size: 12px; }
+      input.sync{ width:18px; height:18px; margin:0; }
     `;
 
     this.shadowRoot.innerHTML = `
@@ -1387,6 +1624,16 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
         <div>
           <div class="label">Strømpris entity</div>
           <tt-entity-picker class="picker" label="Vælg entity" include-domains='["sensor"]'></tt-entity-picker>
+        </div>
+        <div>
+          <div class="label">Sync (valgfri)</div>
+          <div class="row">
+            <div class="txt">
+              <div class="t1">Del "billigste tider" mellem brugere</div>
+              <div class="t2">Gem i Home Assistant (.storage) via integration</div>
+            </div>
+            <input class="sync" type="checkbox" ${sync ? "checked" : ""} />
+          </div>
         </div>
       </div>
     `;
@@ -1439,6 +1686,11 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
         const v = ev?.detail?.value ?? ev?.target?.value;
         this._valueChanged({ entity: v || "" });
       });
+    }
+
+    const syncEl = this.shadowRoot.querySelector("input.sync");
+    if (syncEl) {
+      syncEl.onchange = (e) => this._valueChanged({ sync: !!e.target.checked });
     }
 
     this._loaded = true;
