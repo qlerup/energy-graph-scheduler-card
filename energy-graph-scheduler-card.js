@@ -1257,7 +1257,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       .sections{ margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--divider-color); }
       .sec-title{ color: var(--secondary-text-color); font-size: 12px; margin-bottom: 8px; }
       .sec-grid{ display:flex; flex-wrap:wrap; gap: 10px; }
-      .sec-card{ border: 1px solid var(--divider-color); border-radius: 12px; padding: 10px 12px; min-width: 150px; max-width: 240px; flex: 0 1 auto; cursor: pointer; user-select:none; }
+      .sec-card{ border: 1px solid var(--divider-color); border-radius: 12px; padding: 10px 5px; min-width: 140px; max-width: 240px; flex: 0 1 auto; cursor: pointer; user-select:none; }
       .sec-card:hover{ border-color: color-mix(in oklab, var(--primary-text-color) 20%, var(--divider-color)); }
       .sec-card.active{ border-color: var(--primary-color); box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary-color) 35%, transparent); }
       .sec-name{ color: var(--primary-text-color); font-weight: 700; font-size: 13px; line-height: 1.1; margin-bottom: 6px; }
