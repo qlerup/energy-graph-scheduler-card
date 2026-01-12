@@ -31,6 +31,10 @@ jobs:
               featureAddedReleased: 'Feature added - released',
               featurePlanned: 'Feature will be added',
 
+              // ✅ Locale labels
+              localeWaiting: 'Locale added - waiting on release',
+              localeReleased: 'Locale added - released',
+
               // Legacy labels (safe cleanup if they exist)
               legacyBugFixed: 'Bug fixed',
               legacyFeatureAdded: 'Feature added',
@@ -40,8 +44,11 @@ jobs:
             const MARKERS = {
               bugWaiting: '<!-- status:bug-waiting-release -->',
               featureWaiting: '<!-- status:feature-waiting-release -->',
+              localeWaiting: '<!-- status:locale-waiting-release -->',
+
               bugReleased: '<!-- status:bug-released -->',
               featureReleased: '<!-- status:feature-released -->',
+              localeReleased: '<!-- status:locale-released -->',
             };
 
             function waitingBody(type) {
@@ -63,6 +70,15 @@ jobs:
             If anything is still missing after the release, comment with **reopen** (it will be reopened automatically).`;
               }
 
+              if (type === 'locale') {
+                return `${MARKERS.localeWaiting}
+            ✅ This locale has been marked as **ready** and will be included in the **next release**.
+
+            When the release is published, this issue will be automatically updated and closed.
+
+            If anything is still missing after the release, comment with **reopen** (it will be reopened automatically).`;
+              }
+
               throw new Error('Unknown waiting type: ' + type);
             }
 
@@ -78,6 +94,14 @@ jobs:
               if (type === 'feature') {
                 return `${MARKERS.featureReleased}
             ✅ **Feature released** in **${version}**
+            🔗 ${url}
+
+            If anything is still missing, comment with **reopen**.`;
+              }
+
+              if (type === 'locale') {
+                return `${MARKERS.localeReleased}
+            ✅ **Locale released** in **${version}**
             🔗 ${url}
 
             If anything is still missing, comment with **reopen**.`;
@@ -198,8 +222,12 @@ jobs:
               // 1) Comment
               if (type === 'bug') {
                 await upsertComment(issue_number, MARKERS.bugReleased, releasedBody('bug', version, url));
-              } else {
+              } else if (type === 'feature') {
                 await upsertComment(issue_number, MARKERS.featureReleased, releasedBody('feature', version, url));
+              } else if (type === 'locale') {
+                await upsertComment(issue_number, MARKERS.localeReleased, releasedBody('locale', version, url));
+              } else {
+                throw new Error('Unknown close type: ' + type);
               }
 
               // 2) Labels
@@ -213,7 +241,7 @@ jobs:
                   issue_number,
                   labels: [LABELS.bugReleased],
                 });
-              } else {
+              } else if (type === 'feature') {
                 await safeRemoveLabel(issue_number, LABELS.featureWaiting);
                 await safeRemoveLabel(issue_number, LABELS.featurePlanned);
                 await safeRemoveLabel(issue_number, LABELS.legacyFeatureAdded);
@@ -223,6 +251,15 @@ jobs:
                   repo,
                   issue_number,
                   labels: [LABELS.featureAddedReleased],
+                });
+              } else if (type === 'locale') {
+                await safeRemoveLabel(issue_number, LABELS.localeWaiting);
+
+                await github.rest.issues.addLabels({
+                  owner,
+                  repo,
+                  issue_number,
+                  labels: [LABELS.localeReleased],
                 });
               }
 
@@ -256,6 +293,13 @@ jobs:
                 return;
               }
 
+              // ✅ Locale waiting label support
+              if (appliedLabel === LABELS.localeWaiting) {
+                await upsertComment(issue.number, MARKERS.localeWaiting, waitingBody('locale'));
+                core.info(`#${issue.number}: waiting-for-release comment (locale).`);
+                return;
+              }
+
               core.info(`Label "${appliedLabel}" is not a waiting-for-release label – skipping.`);
               return;
             }
@@ -272,8 +316,12 @@ jobs:
             await ensureLabel(LABELS.bugReleased, '0e8a16', 'Bug fixed and released');
             await ensureLabel(LABELS.featureAddedReleased, '1d76db', 'Feature added and released');
 
+            // ✅ ensure locale released label exists
+            await ensureLabel(LABELS.localeReleased, '5319e7', 'Locale added and released');
+
             const bugIssues = await issuesWithLabelOpen(LABELS.bugWaiting);
             const featureIssues = await issuesWithLabelOpen(LABELS.featureWaiting);
+            const localeIssues = await issuesWithLabelOpen(LABELS.localeWaiting);
 
             for (const issue of bugIssues) {
               await closeAsReleased(issue, 'bug', rel.version, rel.url);
@@ -283,4 +331,9 @@ jobs:
               await closeAsReleased(issue, 'feature', rel.version, rel.url);
             }
 
-            core.info(`Done. Processed bugs=${bugIssues.length}, features=${featureIssues.length}.`);
+            // ✅ close locale issues too
+            for (const issue of localeIssues) {
+              await closeAsReleased(issue, 'locale', rel.version, rel.url);
+            }
+
+            core.info(`Done. Processed bugs=${bugIssues.length}, features=${featureIssues.length}, locales=${localeIssues.length}.`);
