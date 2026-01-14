@@ -32,7 +32,7 @@ jobs:
               featurePlanned: 'Feature will be added',
 
               // ✅ Locale labels
-              localeWaiting: 'Locale added - waiting on release',
+              localeWaiting: 'Locale added - waiting for release',
               localeReleased: 'Locale added - released',
 
               // Legacy labels (safe cleanup if they exist)
@@ -315,8 +315,6 @@ jobs:
 
             await ensureLabel(LABELS.bugReleased, '0e8a16', 'Bug fixed and released');
             await ensureLabel(LABELS.featureAddedReleased, '1d76db', 'Feature added and released');
-
-            // ✅ ensure locale released label exists
             await ensureLabel(LABELS.localeReleased, '5319e7', 'Locale added and released');
 
             const bugIssues = await issuesWithLabelOpen(LABELS.bugWaiting);
@@ -331,9 +329,10 @@ jobs:
               await closeAsReleased(issue, 'feature', rel.version, rel.url);
             }
 
-            // ✅ close locale issues too
             for (const issue of localeIssues) {
               await closeAsReleased(issue, 'locale', rel.version, rel.url);
             }
 
-            core.info(`Done. Processed bugs=${bugIssues.length}, features=${featureIssues.length}, locales=${localeIssues.length}.`);
+            core.info(
+              `Done. Processed bugs=${bugIssues.length}, features=${featureIssues.length}, locales=${localeIssues.length}.`
+            );
