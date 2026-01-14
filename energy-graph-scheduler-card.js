@@ -6,6 +6,470 @@ const EGS_EDITOR_TAG = "energy-graph-scheduler-card-editor";
 const EGS_CARD_VERSION = "0.1.0";
 const EGS_SYNC_DOMAIN = "energy_graph_scheduler";
 
+// ---- energy-graph-scheduler i18n (namespaced) ----
+// Languages match the Thermostat Pro Timeline card: en, da, sv, nb, de, es, fr, it, fi, cs, sl.
+const EGS_I18N = {
+  en: {
+    'card.title_default': 'Energy Graph Scheduler',
+
+    'hint.select_entity': 'Select an electricity price entity in the editor.',
+    'hint.entity_not_found': 'Entity not found',
+    'hint.no_price_data': 'No price data found in entity attributes',
+    'hint.cannot_build_graph': 'Could not build graph from data.',
+
+    'stats.min': 'Min',
+    'stats.now': 'Now',
+    'stats.max': 'Highest',
+    'label.now_value': 'Now: {value} {unit}',
+    'label.now_no_data': 'Now: No data',
+    'label.no_data': 'No data',
+
+    'sections.title': 'Cheapest times',
+
+    'settings.open': 'Settings',
+    'settings.title': 'Settings',
+    'settings.close': 'Close',
+    'settings.add_section': 'Add time section',
+    'settings.name': 'Name',
+    'settings.hours': 'Time interval',
+    'settings.add': 'Add',
+    'settings.sections': 'Sections',
+    'settings.no_sections': 'No sections yet.',
+    'settings.remove': 'Delete',
+    'settings.item_hours': 'Time interval: {hours} hours',
+
+    'editor.language': 'Language',
+    'editor.language_auto': 'Auto (Home Assistant)',
+    'editor.title_optional': 'Title (optional)',
+    'editor.entity_label': 'Electricity price entity',
+    'editor.entity_picker': 'Select entity',
+    'editor.sync_optional': 'Sync (optional)',
+    'editor.sync_title': 'Share “cheapest times” between users',
+    'editor.sync_desc': 'Store in Home Assistant (.storage) via integration',
+  },
+  da: {
+    'card.title_default': 'Energy Graph Scheduler',
+
+    'hint.select_entity': 'Vælg en strømpris-entity i editoren.',
+    'hint.entity_not_found': 'Entity ikke fundet',
+    'hint.no_price_data': 'Ingen pris-data fundet i entity attributes',
+    'hint.cannot_build_graph': 'Kunne ikke opbygge graf fra data.',
+
+    'stats.min': 'Min',
+    'stats.now': 'Nu',
+    'stats.max': 'Højeste',
+    'label.now_value': 'Nu: {value} {unit}',
+    'label.now_no_data': 'Nu: Ingen data',
+    'label.no_data': 'Ingen data',
+
+    'sections.title': 'Billigste tider',
+
+    'settings.open': 'Indstillinger',
+    'settings.title': 'Indstillinger',
+    'settings.close': 'Luk',
+    'settings.add_section': 'Tilføj time-sektion',
+    'settings.name': 'Navn',
+    'settings.hours': 'Timeinterval',
+    'settings.add': 'Tilføj',
+    'settings.sections': 'Sektioner',
+    'settings.no_sections': 'Ingen sektioner endnu.',
+    'settings.remove': 'Slet',
+    'settings.item_hours': 'Timeinterval: {hours} timer',
+
+    'editor.language': 'Sprog',
+    'editor.language_auto': 'Auto (Home Assistant)',
+    'editor.title_optional': 'Titel (valgfri)',
+    'editor.entity_label': 'Strømpris entity',
+    'editor.entity_picker': 'Vælg entity',
+    'editor.sync_optional': 'Sync (valgfri)',
+    'editor.sync_title': 'Del "billigste tider" mellem brugere',
+    'editor.sync_desc': 'Gem i Home Assistant (.storage) via integration',
+  },
+  sv: {
+    'card.title_default': 'Energigraf-schemaläggare',
+
+    'hint.select_entity': 'Välj en elpris-entitet i editorn.',
+    'hint.entity_not_found': 'Entitet hittades inte',
+    'hint.no_price_data': 'Ingen prisdata hittades i entitetens attribut',
+    'hint.cannot_build_graph': 'Kunde inte bygga graf från data.',
+
+    'stats.min': 'Min',
+    'stats.now': 'Nu',
+    'stats.max': 'Högst',
+    'label.now_value': 'Nu: {value} {unit}',
+    'label.now_no_data': 'Nu: Ingen data',
+    'label.no_data': 'Ingen data',
+
+    'sections.title': 'Billigaste tider',
+
+    'settings.open': 'Inställningar',
+    'settings.title': 'Inställningar',
+    'settings.close': 'Stäng',
+    'settings.add_section': 'Lägg till tidssektion',
+    'settings.name': 'Namn',
+    'settings.hours': 'Tidsintervall',
+    'settings.add': 'Lägg till',
+    'settings.sections': 'Sektioner',
+    'settings.no_sections': 'Inga sektioner ännu.',
+    'settings.remove': 'Ta bort',
+    'settings.item_hours': 'Tidsintervall: {hours} timmar',
+
+    'editor.language': 'Språk',
+    'editor.language_auto': 'Auto (Home Assistant)',
+    'editor.title_optional': 'Titel (valfritt)',
+    'editor.entity_label': 'Elpris-entitet',
+    'editor.entity_picker': 'Välj entitet',
+    'editor.sync_optional': 'Synk (valfritt)',
+    'editor.sync_title': 'Dela “billigaste tider” mellan användare',
+    'editor.sync_desc': 'Spara i Home Assistant (.storage) via integration',
+  },
+  nb: {
+    'card.title_default': 'Energigraf-planlegger',
+
+    'hint.select_entity': 'Velg en strømpris-entitet i redigereren.',
+    'hint.entity_not_found': 'Entitet ikke funnet',
+    'hint.no_price_data': 'Ingen prisdata funnet i entitetens attributter',
+    'hint.cannot_build_graph': 'Kunne ikke bygge graf fra data.',
+
+    'stats.min': 'Min',
+    'stats.now': 'Nå',
+    'stats.max': 'Høyest',
+    'label.now_value': 'Nå: {value} {unit}',
+    'label.now_no_data': 'Nå: Ingen data',
+    'label.no_data': 'Ingen data',
+
+    'sections.title': 'Billigste tider',
+
+    'settings.open': 'Innstillinger',
+    'settings.title': 'Innstillinger',
+    'settings.close': 'Lukk',
+    'settings.add_section': 'Legg til tidsseksjon',
+    'settings.name': 'Navn',
+    'settings.hours': 'Tidsintervall',
+    'settings.add': 'Legg til',
+    'settings.sections': 'Seksjoner',
+    'settings.no_sections': 'Ingen seksjoner ennå.',
+    'settings.remove': 'Slett',
+    'settings.item_hours': 'Tidsintervall: {hours} timer',
+
+    'editor.language': 'Språk',
+    'editor.language_auto': 'Auto (Home Assistant)',
+    'editor.title_optional': 'Tittel (valgfritt)',
+    'editor.entity_label': 'Strømpris-entitet',
+    'editor.entity_picker': 'Velg entitet',
+    'editor.sync_optional': 'Synk (valgfritt)',
+    'editor.sync_title': 'Del “billigste tider” mellom brukere',
+    'editor.sync_desc': 'Lagre i Home Assistant (.storage) via integrasjon',
+  },
+  de: {
+    'card.title_default': 'Energiegraph-Planer',
+
+    'hint.select_entity': 'Wähle im Editor eine Strompreis-Entität aus.',
+    'hint.entity_not_found': 'Entität nicht gefunden',
+    'hint.no_price_data': 'Keine Preisdaten in den Attributen der Entität gefunden',
+    'hint.cannot_build_graph': 'Diagramm konnte aus den Daten nicht erstellt werden.',
+
+    'stats.min': 'Min',
+    'stats.now': 'Jetzt',
+    'stats.max': 'Höchste',
+    'label.now_value': 'Jetzt: {value} {unit}',
+    'label.now_no_data': 'Jetzt: Keine Daten',
+    'label.no_data': 'Keine Daten',
+
+    'sections.title': 'Günstigste Zeiten',
+
+    'settings.open': 'Einstellungen',
+    'settings.title': 'Einstellungen',
+    'settings.close': 'Schließen',
+    'settings.add_section': 'Zeitabschnitt hinzufügen',
+    'settings.name': 'Name',
+    'settings.hours': 'Zeitintervall',
+    'settings.add': 'Hinzufügen',
+    'settings.sections': 'Abschnitte',
+    'settings.no_sections': 'Noch keine Abschnitte.',
+    'settings.remove': 'Löschen',
+    'settings.item_hours': 'Zeitintervall: {hours} Stunden',
+
+    'editor.language': 'Sprache',
+    'editor.language_auto': 'Auto (Home Assistant)',
+    'editor.title_optional': 'Titel (optional)',
+    'editor.entity_label': 'Strompreis-Entität',
+    'editor.entity_picker': 'Entität auswählen',
+    'editor.sync_optional': 'Synchronisierung (optional)',
+    'editor.sync_title': '„Günstigste Zeiten“ zwischen Benutzern teilen',
+    'editor.sync_desc': 'In Home Assistant (.storage) über Integration speichern',
+  },
+  es: {
+    'card.title_default': 'Programador de gráfico de energía',
+
+    'hint.select_entity': 'Selecciona una entidad de precio de electricidad en el editor.',
+    'hint.entity_not_found': 'Entidad no encontrada',
+    'hint.no_price_data': 'No se encontraron datos de precio en los atributos de la entidad',
+    'hint.cannot_build_graph': 'No se pudo construir el gráfico a partir de los datos.',
+
+    'stats.min': 'Mín',
+    'stats.now': 'Ahora',
+    'stats.max': 'Máximo',
+    'label.now_value': 'Ahora: {value} {unit}',
+    'label.now_no_data': 'Ahora: Sin datos',
+    'label.no_data': 'Sin datos',
+
+    'sections.title': 'Horarios más baratos',
+
+    'settings.open': 'Ajustes',
+    'settings.title': 'Ajustes',
+    'settings.close': 'Cerrar',
+    'settings.add_section': 'Añadir sección de tiempo',
+    'settings.name': 'Nombre',
+    'settings.hours': 'Intervalo de tiempo',
+    'settings.add': 'Añadir',
+    'settings.sections': 'Secciones',
+    'settings.no_sections': 'Aún no hay secciones.',
+    'settings.remove': 'Eliminar',
+    'settings.item_hours': 'Intervalo de tiempo: {hours} horas',
+
+    'editor.language': 'Idioma',
+    'editor.language_auto': 'Auto (Home Assistant)',
+    'editor.title_optional': 'Título (opcional)',
+    'editor.entity_label': 'Entidad de precio de electricidad',
+    'editor.entity_picker': 'Seleccionar entidad',
+    'editor.sync_optional': 'Sincronización (opcional)',
+    'editor.sync_title': 'Compartir “horarios más baratos” entre usuarios',
+    'editor.sync_desc': 'Guardar en Home Assistant (.storage) mediante la integración',
+  },
+  fr: {
+    'card.title_default': 'Planificateur de graphique d’énergie',
+
+    'hint.select_entity': 'Sélectionnez une entité de prix de l’électricité dans l’éditeur.',
+    'hint.entity_not_found': 'Entité introuvable',
+    'hint.no_price_data': 'Aucune donnée de prix trouvée dans les attributs de l’entité',
+    'hint.cannot_build_graph': 'Impossible de construire le graphique à partir des données.',
+
+    'stats.min': 'Min',
+    'stats.now': 'Maintenant',
+    'stats.max': 'Plus élevé',
+    'label.now_value': 'Maintenant : {value} {unit}',
+    'label.now_no_data': 'Maintenant : Aucune donnée',
+    'label.no_data': 'Aucune donnée',
+
+    'sections.title': 'Heures les moins chères',
+
+    'settings.open': 'Paramètres',
+    'settings.title': 'Paramètres',
+    'settings.close': 'Fermer',
+    'settings.add_section': 'Ajouter une plage horaire',
+    'settings.name': 'Nom',
+    'settings.hours': 'Intervalle de temps',
+    'settings.add': 'Ajouter',
+    'settings.sections': 'Sections',
+    'settings.no_sections': 'Aucune section pour le moment.',
+    'settings.remove': 'Supprimer',
+    'settings.item_hours': 'Intervalle de temps : {hours} heures',
+
+    'editor.language': 'Langue',
+    'editor.language_auto': 'Auto (Home Assistant)',
+    'editor.title_optional': 'Titre (optionnel)',
+    'editor.entity_label': 'Entité de prix de l’électricité',
+    'editor.entity_picker': 'Sélectionner une entité',
+    'editor.sync_optional': 'Synchronisation (optionnelle)',
+    'editor.sync_title': 'Partager les “heures les moins chères” entre utilisateurs',
+    'editor.sync_desc': 'Stocker dans Home Assistant (.storage) via l’intégration',
+  },
+  it: {
+    'card.title_default': 'Pianificatore grafico energia',
+
+    'hint.select_entity': "Seleziona un'entità del prezzo dell'elettricità nell'editor.",
+    'hint.entity_not_found': 'Entità non trovata',
+    'hint.no_price_data': "Nessun dato di prezzo trovato negli attributi dell'entità",
+    'hint.cannot_build_graph': 'Impossibile creare il grafico dai dati.',
+
+    'stats.min': 'Min',
+    'stats.now': 'Ora',
+    'stats.max': 'Massimo',
+    'label.now_value': 'Ora: {value} {unit}',
+    'label.now_no_data': 'Ora: Nessun dato',
+    'label.no_data': 'Nessun dato',
+
+    'sections.title': 'Orari più convenienti',
+
+    'settings.open': 'Impostazioni',
+    'settings.title': 'Impostazioni',
+    'settings.close': 'Chiudi',
+    'settings.add_section': 'Aggiungi sezione temporale',
+    'settings.name': 'Nome',
+    'settings.hours': 'Intervallo di tempo',
+    'settings.add': 'Aggiungi',
+    'settings.sections': 'Sezioni',
+    'settings.no_sections': 'Nessuna sezione ancora.',
+    'settings.remove': 'Elimina',
+    'settings.item_hours': 'Intervallo di tempo: {hours} ore',
+
+    'editor.language': 'Lingua',
+    'editor.language_auto': 'Auto (Home Assistant)',
+    'editor.title_optional': 'Titolo (opzionale)',
+    'editor.entity_label': 'Entità prezzo elettricità',
+    'editor.entity_picker': 'Seleziona entità',
+    'editor.sync_optional': 'Sincronizzazione (opzionale)',
+    'editor.sync_title': 'Condividi “orari più convenienti” tra utenti',
+    'editor.sync_desc': 'Salva in Home Assistant (.storage) tramite integrazione',
+  },
+  fi: {
+    'card.title_default': 'Energiagrafi-ajastin',
+
+    'hint.select_entity': 'Valitse sähkön hinta -entiteetti editorissa.',
+    'hint.entity_not_found': 'Entiteettiä ei löytynyt',
+    'hint.no_price_data': 'Entiteetin attribuuteista ei löytynyt hintatietoja',
+    'hint.cannot_build_graph': 'Graafia ei voitu muodostaa datasta.',
+
+    'stats.min': 'Min',
+    'stats.now': 'Nyt',
+    'stats.max': 'Korkein',
+    'label.now_value': 'Nyt: {value} {unit}',
+    'label.now_no_data': 'Nyt: Ei dataa',
+    'label.no_data': 'Ei dataa',
+
+    'sections.title': 'Halvimmat ajat',
+
+    'settings.open': 'Asetukset',
+    'settings.title': 'Asetukset',
+    'settings.close': 'Sulje',
+    'settings.add_section': 'Lisää aikajakso',
+    'settings.name': 'Nimi',
+    'settings.hours': 'Aikaväli',
+    'settings.add': 'Lisää',
+    'settings.sections': 'Osiot',
+    'settings.no_sections': 'Ei osioita vielä.',
+    'settings.remove': 'Poista',
+    'settings.item_hours': 'Aikaväli: {hours} tuntia',
+
+    'editor.language': 'Kieli',
+    'editor.language_auto': 'Auto (Home Assistant)',
+    'editor.title_optional': 'Otsikko (valinnainen)',
+    'editor.entity_label': 'Sähkön hinta -entiteetti',
+    'editor.entity_picker': 'Valitse entiteetti',
+    'editor.sync_optional': 'Synkronointi (valinnainen)',
+    'editor.sync_title': 'Jaa “halvimmat ajat” käyttäjien kesken',
+    'editor.sync_desc': 'Tallenna Home Assistantiin (.storage) integraation kautta',
+  },
+  cs: {
+    'card.title_default': 'Plánovač energetického grafu',
+
+    'hint.select_entity': 'V editoru vyberte entitu ceny elektřiny.',
+    'hint.entity_not_found': 'Entita nebyla nalezena',
+    'hint.no_price_data': 'V atributech entity nebyla nalezena data o ceně',
+    'hint.cannot_build_graph': 'Nepodařilo se vytvořit graf z dat.',
+
+    'stats.min': 'Min',
+    'stats.now': 'Nyní',
+    'stats.max': 'Nejvyšší',
+    'label.now_value': 'Nyní: {value} {unit}',
+    'label.now_no_data': 'Nyní: Žádná data',
+    'label.no_data': 'Žádná data',
+
+    'sections.title': 'Nejlevnější časy',
+
+    'settings.open': 'Nastavení',
+    'settings.title': 'Nastavení',
+    'settings.close': 'Zavřít',
+    'settings.add_section': 'Přidat časový úsek',
+    'settings.name': 'Název',
+    'settings.hours': 'Časový interval',
+    'settings.add': 'Přidat',
+    'settings.sections': 'Úseky',
+    'settings.no_sections': 'Zatím žádné úseky.',
+    'settings.remove': 'Smazat',
+    'settings.item_hours': 'Časový interval: {hours} hodin',
+
+    'editor.language': 'Jazyk',
+    'editor.language_auto': 'Auto (Home Assistant)',
+    'editor.title_optional': 'Název (volitelné)',
+    'editor.entity_label': 'Entita ceny elektřiny',
+    'editor.entity_picker': 'Vybrat entitu',
+    'editor.sync_optional': 'Synchronizace (volitelné)',
+    'editor.sync_title': 'Sdílet „nejlevnější časy“ mezi uživateli',
+    'editor.sync_desc': 'Uložit do Home Assistant (.storage) přes integraci',
+  },
+  sl: {
+    'card.title_default': 'Razporejevalnik energijskega grafa',
+
+    'hint.select_entity': 'V urejevalniku izberite entiteto cene elektrike.',
+    'hint.entity_not_found': 'Entiteta ni najdena',
+    'hint.no_price_data': 'V atributih entitete ni podatkov o ceni',
+    'hint.cannot_build_graph': 'Grafa ni bilo mogoče zgraditi iz podatkov.',
+
+    'stats.min': 'Min',
+    'stats.now': 'Zdaj',
+    'stats.max': 'Najvišje',
+    'label.now_value': 'Zdaj: {value} {unit}',
+    'label.now_no_data': 'Zdaj: Ni podatkov',
+    'label.no_data': 'Ni podatkov',
+
+    'sections.title': 'Najcenejši časi',
+
+    'settings.open': 'Nastavitve',
+    'settings.title': 'Nastavitve',
+    'settings.close': 'Zapri',
+    'settings.add_section': 'Dodaj časovni odsek',
+    'settings.name': 'Ime',
+    'settings.hours': 'Časovni interval',
+    'settings.add': 'Dodaj',
+    'settings.sections': 'Odseki',
+    'settings.no_sections': 'Zaenkrat ni odsekov.',
+    'settings.remove': 'Izbriši',
+    'settings.item_hours': 'Časovni interval: {hours} ur',
+
+    'editor.language': 'Jezik',
+    'editor.language_auto': 'Samodejno (Home Assistant)',
+    'editor.title_optional': 'Naslov (neobvezno)',
+    'editor.entity_label': 'Entiteta cene elektrike',
+    'editor.entity_picker': 'Izberi entiteto',
+    'editor.sync_optional': 'Sinhronizacija (neobvezno)',
+    'editor.sync_title': 'Deli “najcenejše čase” med uporabniki',
+    'editor.sync_desc': 'Shrani v Home Assistant (.storage) prek integracije',
+  },
+};
+
+const EGS_LANG_ALIAS = { no: 'nb', cz: 'cs', dk: 'da' };
+
+function egsGetLangFromHass(hass) {
+  // Home Assistant can report locales like "da_DK"; normalize to BCP-47 ("da-DK").
+  const raw =
+    (typeof hass === 'string' ? hass : (hass?.locale?.language || hass?.language)) ||
+    navigator.language ||
+    'en';
+  return String(raw).replace(/_/g, '-').toLowerCase();
+}
+
+function egsLocalize(key, langOrHass) {
+  const raw = typeof langOrHass === 'string' ? langOrHass : egsGetLangFromHass(langOrHass);
+  const lang = String(raw).replace(/_/g, '-').toLowerCase();
+  const parts = lang.split('-');
+  const candidates = [
+    lang,
+    parts[0],
+    EGS_LANG_ALIAS[lang],
+    EGS_LANG_ALIAS[parts[0]],
+    'en',
+  ].filter(Boolean);
+  for (const c of candidates) {
+    const dict = EGS_I18N[c];
+    if (dict && dict[key]) return dict[key];
+  }
+  return (EGS_I18N.en && EGS_I18N.en[key]) || key;
+}
+
+function egsFormatTemplate(tpl, vars) {
+  const s = (tpl ?? '').toString();
+  const v = vars && typeof vars === 'object' ? vars : {};
+  return s.replace(/\{([^}]+)\}/g, (_m, k) => (v[k] != null ? String(v[k]) : ''));
+}
+
+function egsGetUiLang(config, hass) {
+  const forced = egsSafeText(config?.language || '').trim();
+  return forced ? egsGetLangFromHass(forced) : egsGetLangFromHass(hass);
+}
+// ---- end i18n ----
+
 /* ----------------- LIGHTWEIGHT PICKER (tt-entity-picker) -----------------
  * Use the same custom entity picker concept as used in other cards in this repo.
  */
@@ -82,7 +546,7 @@ if (!customElements.get("tt-entity-picker")) {
       const current = this._value || "";
       const hasCurrent = current && opts.some((o) => o.id === current);
       const extraCurrentOpt =
-        current && !hasCurrent ? [`<option value="${current}">${current} (valgt)</option>`] : [];
+        current && !hasCurrent ? [`<option value="${current}">${current} (selected)</option>`] : [];
 
       const selOpts = [
         `<option value="">${label || "Select"}</option>`,
@@ -397,7 +861,7 @@ function egsFormatHourRange(startHour, hours) {
 
 function egsFormatDate(d) {
   try {
-    return d.toLocaleDateString("da-DK", { day: "2-digit", month: "2-digit" });
+    return d.toLocaleDateString(undefined, { day: "2-digit", month: "2-digit" });
   } catch {
     const mm = egsPad2(d.getMonth() + 1);
     const dd = egsPad2(d.getDate());
@@ -405,7 +869,16 @@ function egsFormatDate(d) {
   }
 }
 
-function egsFormatRangeByTs(startTs, hours, nowTs) {
+function egsFormatDateByLang(d, langOrHass) {
+  try {
+    const loc = egsGetLangFromHass(langOrHass);
+    return d.toLocaleDateString(loc || undefined, { day: '2-digit', month: '2-digit' });
+  } catch {
+    return egsFormatDate(d);
+  }
+}
+
+function egsFormatRangeByTs(startTs, hours, nowTs, langOrHass) {
   if (startTs == null) return null;
   const h = egsClamp(Number(hours) || 0, 1, 240);
   const start = new Date(startTs);
@@ -424,10 +897,13 @@ function egsFormatRangeByTs(startTs, hours, nowTs) {
   }
 
   if (startDay === endDay) {
-    return `${egsFormatDate(start)} ${startH}:00 - ${endH}:${endM}`;
+    return `${egsFormatDateByLang(start, langOrHass)} ${startH}:00 - ${endH}:${endM}`;
   }
 
-  return `${egsFormatDate(start)} ${startH}:00 - ${egsFormatDate(end)} ${endH}:${endM}`;
+  return `${egsFormatDateByLang(start, langOrHass)} ${startH}:00 - ${egsFormatDateByLang(
+    end,
+    langOrHass
+  )} ${endH}:${endM}`;
 }
 
 function egsFindCheapestWindow(hourValues, hours) {
@@ -644,9 +1120,11 @@ class EnergyGraphSchedulerCard extends HTMLElement {
   static getStubConfig() {
     return {
       type: `custom:${EGS_CARD_TAG}`,
-      title: "Energy Graph Scheduler",
+      // Localize default title based on browser language; editor/runtime will further adapt to HA language
+      title: egsLocalize('card.title_default', navigator.language || 'en'),
       entity: "",
       sync: false,
+      language: "", // "" = auto (Home Assistant)
     };
   }
 
@@ -662,6 +1140,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       title: config.title ?? stub.title,
       entity: config.entity || "",
       sync: !!config.sync,
+      language: typeof config.language === 'string' ? config.language : stub.language,
       // Never lose type
       type: config.type || stub.type,
     };
@@ -953,6 +1432,9 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     const hass = this._hass;
     const config = this._config || { title: "Energy Graph Scheduler", entity: "" };
 
+    const lang = egsGetUiLang(config, hass);
+    const t = (key, vars) => egsFormatTemplate(egsLocalize(key, config.language || hass), vars);
+
     // Used only to adapt label density for small cards (does not affect layout sizing).
     let hostW = 0;
     try {
@@ -964,7 +1446,22 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     const entityId = egsSafeText(config.entity);
     const stateObj = entityId ? hass?.states?.[entityId] : null;
 
-    const title = egsSafeText(config.title || "Energy Graph Scheduler");
+    const rawTitle = egsSafeText(config.title || "");
+    const titleDefaultCandidates = (() => {
+      try {
+        const set = new Set();
+        for (const k of Object.keys(EGS_I18N || {})) {
+          const v = EGS_I18N[k] && EGS_I18N[k]['card.title_default'];
+          if (v) set.add(String(v).trim());
+        }
+        return set;
+      } catch {
+        return new Set();
+      }
+    })();
+    const title = !rawTitle || titleDefaultCandidates.has(String(rawTitle).trim())
+      ? egsSafeText(egsLocalize('card.title_default', config.language || hass))
+      : rawTitle;
 
     const unit = stateObj?.attributes?.unit_of_measurement || "";
     const friendly = stateObj?.attributes?.friendly_name || entityId;
@@ -977,14 +1474,14 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     let bodyHtml = "";
 
     if (!entityId) {
-      bodyHtml = `<div class="hint">Vælg en strømpris-entity i editoren.</div>`;
+      bodyHtml = `<div class="hint">${egsSafeText(t('hint.select_entity'))}</div>`;
     } else if (!stateObj) {
-      bodyHtml = `<div class="hint">Entity ikke fundet: <span class="mono">${entityId}</span></div>`;
+      bodyHtml = `<div class="hint">${egsSafeText(t('hint.entity_not_found'))}: <span class="mono">${entityId}</span></div>`;
     } else {
       const { points } = egsExtractSeries(stateObj);
 
       if (!points.length) {
-        bodyHtml = `<div class="hint">Ingen pris-data fundet i <span class="mono">${entityId}</span> attributes.</div>`;
+        bodyHtml = `<div class="hint">${egsSafeText(t('hint.no_price_data'))}: <span class="mono">${entityId}</span></div>`;
       } else {
         const nowTs = Date.now();
         const timeline = egsBuildTimeline(points, nowTs);
@@ -1007,7 +1504,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
         const width = pad.left + pad.right + timeline.length * stepPx;
         const bars = egsComputeBars(timeline, width, height, pad);
         if (!bars) {
-          bodyHtml = `<div class="hint">Kunne ikke opbygge graf fra data.</div>`;
+          bodyHtml = `<div class="hint">${egsSafeText(t('hint.cannot_build_graph'))}</div>`;
         } else {
           const nowIndex = egsNearestIndexByTime(bars.pts, nowTs);
           const nowPoint = nowIndex != null ? bars.pts[nowIndex] : null;
@@ -1045,7 +1542,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
               )}" y2="${(height - pad.bottom).toFixed(2)}" class="daysep" />
                 <text x="${x.toFixed(2)}" y="${yDate.toFixed(
                 2
-              )}" text-anchor="middle" class="daylab">${egsSafeText(egsFormatDate(d))}</text>
+              )}" text-anchor="middle" class="daylab">${egsSafeText(egsFormatDateByLang(d, lang))}</text>
               `;
             })
             .join("");
@@ -1108,8 +1605,8 @@ class EnergyGraphSchedulerCard extends HTMLElement {
             const yBottom = bars.baselineY + 8;
             const valTxt = Number.isFinite(nowPoint.value) ? nowPoint.value.toFixed(3) : "";
             const label = Number.isFinite(nowPoint.value)
-              ? `Nu: ${egsSafeText(valTxt)} ${egsSafeText(unit)}`
-              : `Nu: Ingen data`;
+              ? t('label.now_value', { value: egsSafeText(valTxt), unit: egsSafeText(unit) })
+              : t('label.now_no_data');
             const lx = egsClamp(x, pad.left + 70, width - pad.right - 70);
             const ly = yTop + 14;
             return `
@@ -1151,9 +1648,9 @@ class EnergyGraphSchedulerCard extends HTMLElement {
             <div class="meta">
               <div class="name">${egsSafeText(friendly)}</div>
               <div class="stats">
-                <span>Min: <b>${minTxt}</b> ${egsSafeText(unit)}</span>
-                <span>Nu: <b>${nowTxt}</b> ${egsSafeText(unit)}</span>
-                <span>Højeste: <b>${maxTxt}</b> ${egsSafeText(unit)}</span>
+                <span>${egsSafeText(t('stats.min'))}: <b>${minTxt}</b> ${egsSafeText(unit)}</span>
+                <span>${egsSafeText(t('stats.now'))}: <b>${nowTxt}</b> ${egsSafeText(unit)}</span>
+                <span>${egsSafeText(t('stats.max'))}: <b>${maxTxt}</b> ${egsSafeText(unit)}</span>
               </div>
             </div>
             <div class="graph">
@@ -1192,19 +1689,19 @@ class EnergyGraphSchedulerCard extends HTMLElement {
                   if (!best) {
                     return `<div class="sec-card${active ? " active" : ""}" data-sec-idx="${si}"><div class="sec-name">${egsSafeText(
                       s.name
-                    )}</div><div class="sec-when muted">Ingen data</div></div>`;
+                    )}</div><div class="sec-when muted">${egsSafeText(t('label.no_data'))}</div></div>`;
                   }
                   const startTs = timeline?.[best.start]?.ts ?? null;
                   const txt =
                     startTs != null
-                      ? egsFormatRangeByTs(startTs, best.hours, nowTs)
+                      ? egsFormatRangeByTs(startTs, best.hours, nowTs, lang)
                       : egsFormatHourRange(best.start % 24, best.hours);
                   return `<div class="sec-card${active ? " active" : ""}" data-sec-idx="${si}"><div class="sec-name">${egsSafeText(
                     s.name
                   )}</div><div class="sec-when">${egsSafeText(txt)}</div></div>`;
                 })
                 .join("");
-              return `<div class="sections"><div class="sec-title">Billigste tider</div><div class="sec-grid">${items}</div></div>`;
+              return `<div class="sections"><div class="sec-title">${egsSafeText(t('sections.title'))}</div><div class="sec-grid">${items}</div></div>`;
             })()}
           `;
         }
@@ -1290,40 +1787,40 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       const list = secs
         .map(
           (s, i) =>
-            `<div class="item"><div><strong>${egsSafeText(s.name)}</strong><div><span>Timeinterval: ${egsClamp(
-              s.hours,
-              1,
-              24
-            )} timer</span></div></div><button class="btn" data-act="remove" data-idx="${i}">Slet</button></div>`
+            `<div class="item"><div><strong>${egsSafeText(s.name)}</strong><div><span>${egsSafeText(
+              t('settings.item_hours', { hours: egsClamp(s.hours, 1, 24) })
+            )}</span></div></div><button class="btn" data-act="remove" data-idx="${i}">${egsSafeText(
+              t('settings.remove')
+            )}</button></div>`
         )
         .join("");
       return `
         <div class="modal-backdrop" data-act="close">
           <div class="modal" role="dialog" aria-label="Settings">
             <div class="modal-hdr">
-              <div class="modal-title">Settings</div>
-              <button class="iconbtn" data-act="close" aria-label="Close">✕</button>
+              <div class="modal-title">${egsSafeText(t('settings.title'))}</div>
+              <button class="iconbtn" data-act="close" aria-label="${egsSafeText(t('settings.close'))}">✕</button>
             </div>
             <div class="modal-body">
               <div>
-                <div class="lab">Tilføj time-sektion</div>
+                <div class="lab">${egsSafeText(t('settings.add_section'))}</div>
                 <div class="formrow">
                   <div class="field">
-                    <div class="lab">Navn</div>
+                    <div class="lab">${egsSafeText(t('settings.name'))}</div>
                     <input class="inp" data-field="name" placeholder="Opvasker" />
                   </div>
                   <div class="field" style="max-width:160px">
-                    <div class="lab">Timeinterval</div>
+                    <div class="lab">${egsSafeText(t('settings.hours'))}</div>
                     <input class="inp" data-field="hours" type="number" min="1" max="24" step="1" value="3" />
                   </div>
                   <div class="field" style="max-width:140px; align-self:flex-end">
-                    <button class="btn" data-act="add">Tilføj</button>
+                    <button class="btn" data-act="add">${egsSafeText(t('settings.add'))}</button>
                   </div>
                 </div>
               </div>
               <div>
-                <div class="lab">Sektioner</div>
-                <div class="list">${list || `<div class="muted">Ingen sektioner endnu.</div>`}</div>
+                <div class="lab">${egsSafeText(t('settings.sections'))}</div>
+                <div class="list">${list || `<div class="muted">${egsSafeText(t('settings.no_sections'))}</div>`}</div>
               </div>
             </div>
           </div>
@@ -1336,7 +1833,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       <ha-card>
         <div class="hdr">
           <div class="hdr-title">${title}</div>
-          <button class="hdr-btn" data-act="open-settings">Settings</button>
+          <button class="hdr-btn" data-act="open-settings">${egsSafeText(t('settings.open'))}</button>
         </div>
         <div class="wrap">${bodyHtml}</div>
       </ha-card>
@@ -1392,13 +1889,13 @@ class EnergyGraphSchedulerCard extends HTMLElement {
           const ts = tsStr != null && tsStr !== "" ? Number(tsStr) : null;
           const time =
             Number.isFinite(ts) && ts != null
-              ? egsFormatRangeByTs(ts, 1, Date.now())
+              ? egsFormatRangeByTs(ts, 1, Date.now(), lang)
               : egsFormatHourRange(i % 24, 1);
           tip.innerHTML = hasVal
             ? `<div class="t-time">${egsSafeText(time)}</div><div class="t-val">${egsSafeText(
                 valStr
               )}<span class="t-unit">${egsSafeText(unit)}</span></div>`
-            : `<div class="t-time">${egsSafeText(time)}</div><div class="t-val muted">Ingen data</div>`;
+            : `<div class="t-time">${egsSafeText(time)}</div><div class="t-val muted">${egsSafeText(t('label.no_data'))}</div>`;
 
           const r = graph.getBoundingClientRect();
           const x = clientX - r.left;
@@ -1529,6 +2026,7 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
       title: (config && config.title) != null ? config.title : stub.title,
       entity: (config && config.entity) || "",
       sync: !!(config && config.sync),
+      language: typeof (config && config.language) === 'string' ? config.language : stub.language,
     };
     if (this._loaded) this._applyConfigToUi();
     else this._render();
@@ -1573,9 +2071,10 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
 
   _applyConfigToUi() {
     if (!this.shadowRoot) return;
-    const title = egsSafeText(this._config?.title ?? "Energy Graph Scheduler");
+    const title = egsSafeText(this._config?.title ?? "");
     const entity = egsSafeText(this._config?.entity ?? "");
     const sync = !!this._config?.sync;
+    const language = egsSafeText(this._config?.language ?? "");
 
     const titleEl = this.shadowRoot.querySelector("input.title");
     if (titleEl && titleEl.value !== title) titleEl.value = title;
@@ -1591,6 +2090,9 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
 
     const syncEl = this.shadowRoot.querySelector("input.sync");
     if (syncEl && syncEl.checked !== sync) syncEl.checked = sync;
+
+    const langEl = this.shadowRoot.querySelector("select.language");
+    if (langEl && langEl.value !== language) langEl.value = language;
   }
 
   _render() {
@@ -1598,8 +2100,36 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
 
     const hass = this._hass;
     const entity = egsSafeText(this._config?.entity);
-    const title = egsSafeText(this._config?.title ?? "Energy Graph Scheduler");
+    const title = egsSafeText(this._config?.title ?? "");
     const sync = !!this._config?.sync;
+    const language = egsSafeText(this._config?.language ?? "");
+
+    const lang = egsGetUiLang(this._config, hass);
+    const t = (key, vars) => egsFormatTemplate(egsLocalize(key, this._config?.language || hass), vars);
+
+    const titlePlaceholder = egsSafeText(egsLocalize('card.title_default', this._config?.language || hass || 'en'));
+
+    const languageLabels = {
+      en: 'English',
+      da: 'Dansk',
+      sv: 'Svenska',
+      nb: 'Norsk (Bokmål)',
+      de: 'Deutsch',
+      es: 'Español',
+      fr: 'Français',
+      it: 'Italiano',
+      fi: 'Suomi',
+      cs: 'Čeština',
+      sl: 'Slovenščina',
+    };
+    const supportedLangs = ['en','da','sv','nb','de','es','fr','it','fi','cs','sl'];
+    const langOptions = [
+      `<option value="" ${language === '' ? 'selected' : ''}>${egsSafeText(t('editor.language_auto'))}</option>`,
+      ...supportedLangs.map((code) => {
+        const label = languageLabels[code] || code;
+        return `<option value="${code}" ${language === code ? 'selected' : ''}>${egsSafeText(label)} (${code})</option>`;
+      }),
+    ].join('');
 
     const css = `
       :host{ display:block; padding: 8px 0; }
@@ -1607,6 +2137,8 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
       .label{ color: var(--secondary-text-color); font-size: 12px; margin: 2px 0 6px; }
       input{ width:100%; height:36px; box-sizing:border-box; border:1px solid var(--divider-color); border-radius:8px; padding:6px 10px; background: var(--card-background-color); color: var(--primary-text-color); }
       input:focus{ outline:none; border-color: var(--primary-color); box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary-color) 35%, transparent); }
+      select{ width:100%; height:36px; box-sizing:border-box; border:1px solid var(--divider-color); border-radius:8px; padding:6px 10px; background: var(--card-background-color); color: var(--primary-text-color); }
+      select:focus{ outline:none; border-color: var(--primary-color); box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary-color) 35%, transparent); }
       .row{ display:flex; align-items:center; justify-content:space-between; gap: 12px; border:1px solid var(--divider-color); border-radius:10px; padding: 10px; }
       .row .txt{ display:flex; flex-direction:column; gap: 2px; }
       .row .t1{ color: var(--primary-text-color); font-weight: 600; font-size: 13px; }
@@ -1618,19 +2150,23 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
       <style>${css}</style>
       <div class="grid">
         <div>
-          <div class="label">Titel (valgfri)</div>
-          <input class="title" type="text" value="${title}" placeholder="Energy Graph Scheduler" />
+          <div class="label">${egsSafeText(t('editor.title_optional'))}</div>
+          <input class="title" type="text" value="${title}" placeholder="${titlePlaceholder}" />
         </div>
         <div>
-          <div class="label">Strømpris entity</div>
-          <tt-entity-picker class="picker" label="Vælg entity" include-domains='["sensor"]'></tt-entity-picker>
+          <div class="label">${egsSafeText(t('editor.language'))}</div>
+          <select class="language">${langOptions}</select>
         </div>
         <div>
-          <div class="label">Sync (valgfri)</div>
+          <div class="label">${egsSafeText(t('editor.entity_label'))}</div>
+          <tt-entity-picker class="picker" label="${egsSafeText(t('editor.entity_picker'))}" include-domains='["sensor"]'></tt-entity-picker>
+        </div>
+        <div>
+          <div class="label">${egsSafeText(t('editor.sync_optional'))}</div>
           <div class="row">
             <div class="txt">
-              <div class="t1">Del "billigste tider" mellem brugere</div>
-              <div class="t2">Gem i Home Assistant (.storage) via integration</div>
+              <div class="t1">${egsSafeText(t('editor.sync_title'))}</div>
+              <div class="t2">${egsSafeText(t('editor.sync_desc'))}</div>
             </div>
             <input class="sync" type="checkbox" ${sync ? "checked" : ""} />
           </div>
@@ -1641,6 +2177,39 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
     const titleEl = this.shadowRoot.querySelector("input.title");
     if (titleEl) {
       titleEl.onchange = (e) => this._valueChanged({ title: e.target.value || "" });
+    }
+
+    const langEl = this.shadowRoot.querySelector('select.language');
+    if (langEl) {
+      langEl.onchange = (e) => {
+        const v = egsSafeText(e?.target?.value || '');
+
+        // Keep default title in sync if the user hasn't customized it.
+        let nextTitle = undefined;
+        try {
+          const rawTitle = egsSafeText(this._config?.title || '');
+          const titleDefaultCandidates = (() => {
+            try {
+              const set = new Set();
+              for (const k of Object.keys(EGS_I18N || {})) {
+                const dv = EGS_I18N[k] && EGS_I18N[k]['card.title_default'];
+                if (dv) set.add(String(dv).trim());
+              }
+              return set;
+            } catch {
+              return new Set();
+            }
+          })();
+          if (!rawTitle || titleDefaultCandidates.has(String(rawTitle).trim())) {
+            nextTitle = egsSafeText(egsLocalize('card.title_default', v || this._hass || 'en'));
+          }
+        } catch {
+          nextTitle = undefined;
+        }
+
+        this._valueChanged(nextTitle != null ? { language: v, title: nextTitle } : { language: v });
+        this._render();
+      };
     }
 
     const picker = this.shadowRoot.querySelector(".picker");
