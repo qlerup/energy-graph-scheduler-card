@@ -1901,11 +1901,17 @@ class EnergyGraphSchedulerCard extends HTMLElement {
           const x = clientX - r.left;
           const y = clientY - r.top;
 
-          // Keep it inside the graph area.
+          // Clamp in *visible viewport* coords
           const cx = egsClamp(x, 12, r.width - 12);
           const cy = egsClamp(y, 12, r.height - 12);
-          tip.style.left = `${cx}px`;
-          tip.style.top = `${cy}px`;
+
+          // Convert to *scroll content* coords (tooltip is inside the scroller!)
+          const sx = (graph.scrollLeft || 0);
+          const sy = (graph.scrollTop || 0);
+
+          tip.style.left = `${cx + sx}px`;
+          tip.style.top = `${cy + sy}px`;
+          
           tip.style.transform = cy < 42 ? "translate(-50%, 16px)" : "translate(-50%, -120%)";
           tip.hidden = false;
         };
