@@ -3,7 +3,7 @@
 
 const EGS_CARD_TAG = "energy-graph-scheduler-card";
 const EGS_EDITOR_TAG = "energy-graph-scheduler-card-editor";
-const EGS_CARD_VERSION = "0.1.0";
+const EGS_CARD_VERSION = "0.1.2";
 const EGS_SYNC_DOMAIN = "energy_graph_scheduler";
 
 // ---- energy-graph-scheduler i18n (namespaced) ----
@@ -37,6 +37,8 @@ const EGS_I18N = {
     'settings.no_sections': 'No sections yet.',
     'settings.remove': 'Delete',
     'settings.item_hours': 'Time interval: {hours} hours',
+    'settings.interval': 'Graph resolution',
+    'settings.quarter_hours': 'Use 15-minute intervals',
 
     'editor.language': 'Language',
     'editor.language_auto': 'Auto (Home Assistant)',
@@ -75,6 +77,8 @@ const EGS_I18N = {
     'settings.no_sections': 'Ingen sektioner endnu.',
     'settings.remove': 'Slet',
     'settings.item_hours': 'Timeinterval: {hours} timer',
+    'settings.interval': 'Graf opløsning',
+    'settings.quarter_hours': 'Brug 15-minutters intervaller',
 
     'editor.language': 'Sprog',
     'editor.language_auto': 'Auto (Home Assistant)',
@@ -113,6 +117,8 @@ const EGS_I18N = {
     'settings.no_sections': 'Inga sektioner ännu.',
     'settings.remove': 'Ta bort',
     'settings.item_hours': 'Tidsintervall: {hours} timmar',
+    'settings.interval': 'Graph resolution',
+    'settings.quarter_hours': 'Use 15-minute intervals',
 
     'editor.language': 'Språk',
     'editor.language_auto': 'Auto (Home Assistant)',
@@ -151,6 +157,8 @@ const EGS_I18N = {
     'settings.no_sections': 'Ingen seksjoner ennå.',
     'settings.remove': 'Slett',
     'settings.item_hours': 'Tidsintervall: {hours} timer',
+    'settings.interval': 'Graph resolution',
+    'settings.quarter_hours': 'Use 15-minute intervals',
 
     'editor.language': 'Språk',
     'editor.language_auto': 'Auto (Home Assistant)',
@@ -189,6 +197,8 @@ const EGS_I18N = {
     'settings.no_sections': 'Noch keine Abschnitte.',
     'settings.remove': 'Löschen',
     'settings.item_hours': 'Zeitintervall: {hours} Stunden',
+    'settings.interval': 'Graph resolution',
+    'settings.quarter_hours': 'Use 15-minute intervals',
 
     'editor.language': 'Sprache',
     'editor.language_auto': 'Auto (Home Assistant)',
@@ -227,6 +237,8 @@ const EGS_I18N = {
     'settings.no_sections': 'Aún no hay secciones.',
     'settings.remove': 'Eliminar',
     'settings.item_hours': 'Intervalo de tiempo: {hours} horas',
+    'settings.interval': 'Graph resolution',
+    'settings.quarter_hours': 'Use 15-minute intervals',
 
     'editor.language': 'Idioma',
     'editor.language_auto': 'Auto (Home Assistant)',
@@ -265,6 +277,8 @@ const EGS_I18N = {
     'settings.no_sections': 'Aucune section pour le moment.',
     'settings.remove': 'Supprimer',
     'settings.item_hours': 'Intervalle de temps : {hours} heures',
+    'settings.interval': 'Graph resolution',
+    'settings.quarter_hours': 'Use 15-minute intervals',
 
     'editor.language': 'Langue',
     'editor.language_auto': 'Auto (Home Assistant)',
@@ -303,6 +317,8 @@ const EGS_I18N = {
     'settings.no_sections': 'Nessuna sezione ancora.',
     'settings.remove': 'Elimina',
     'settings.item_hours': 'Intervallo di tempo: {hours} ore',
+    'settings.interval': 'Graph resolution',
+    'settings.quarter_hours': 'Use 15-minute intervals',
 
     'editor.language': 'Lingua',
     'editor.language_auto': 'Auto (Home Assistant)',
@@ -341,6 +357,8 @@ const EGS_I18N = {
     'settings.no_sections': 'Ei osioita vielä.',
     'settings.remove': 'Poista',
     'settings.item_hours': 'Aikaväli: {hours} tuntia',
+    'settings.interval': 'Graph resolution',
+    'settings.quarter_hours': 'Use 15-minute intervals',
 
     'editor.language': 'Kieli',
     'editor.language_auto': 'Auto (Home Assistant)',
@@ -379,6 +397,8 @@ const EGS_I18N = {
     'settings.no_sections': 'Zatím žádné úseky.',
     'settings.remove': 'Smazat',
     'settings.item_hours': 'Časový interval: {hours} hodin',
+    'settings.interval': 'Graph resolution',
+    'settings.quarter_hours': 'Use 15-minute intervals',
 
     'editor.language': 'Jazyk',
     'editor.language_auto': 'Auto (Home Assistant)',
@@ -417,6 +437,8 @@ const EGS_I18N = {
     'settings.no_sections': 'Zaenkrat ni odsekov.',
     'settings.remove': 'Izbriši',
     'settings.item_hours': 'Časovni interval: {hours} ur',
+    'settings.interval': 'Graph resolution',
+    'settings.quarter_hours': 'Use 15-minute intervals',
 
     'editor.language': 'Jezik',
     'editor.language_auto': 'Samodejno (Home Assistant)',
@@ -749,37 +771,96 @@ function egsStartOfLocalHour(ts) {
   return d.getTime();
 }
 
-function egsBuildTimeline(points, nowTs) {
+function egsStartOfLocalInterval(ts, intervalMinutes) {
+  const m = egsClamp(Number(intervalMinutes) || 60, 1, 60);
+  const d = new Date(ts);
+  const mm = d.getMinutes();
+  const floored = Math.floor(mm / m) * m;
+  d.setMinutes(floored, 0, 0);
+  return d.getTime();
+}
+
+function egsBuildTimeline(points, nowTs, intervalMinutes) {
   const src = Array.isArray(points) ? points : [];
+  const intervalM = egsClamp(Number(intervalMinutes) || 60, 1, 60);
+  const stepMs = intervalM * 60 * 1000;
   const hasTs = src.some((p) => p && p.ts != null);
 
   if (!hasTs) {
-    return src.map((p, i) => ({ ts: null, value: p?.value ?? null, idx: i }));
+    // No timestamps: assume sequential hourly values for current local day.
+    const dayStart = egsStartOfLocalDay(nowTs != null ? nowTs : Date.now());
+    const hourly = src.map((p, i) => ({ ts: dayStart + i * 3600 * 1000, value: p?.value ?? null, idx: i }));
+    if (intervalM === 60) return hourly;
+
+    // Expand each hour value across sub-intervals.
+    const out = [];
+    const perHour = Math.max(1, Math.round(60 / intervalM));
+    for (let i = 0; i < hourly.length; i++) {
+      const base = hourly[i];
+      for (let j = 0; j < perHour; j++) {
+        out.push({ ts: base.ts + j * stepMs, value: base.value, idx: out.length });
+      }
+    }
+    return out;
   }
 
   const map = new Map();
   let minTs = null;
   let maxTs = null;
+
+  // Detect hourly-only datasets (all timestamps are on the hour).
+  let hourlyOnly = true;
   for (const p of src) {
     if (!p || p.ts == null) continue;
-    const t = egsStartOfLocalHour(p.ts);
+    const d = new Date(p.ts);
+    if (intervalM !== 60) {
+      // In 15-min mode, consider the series hourly-only when all samples start at HH:00.
+      if (d.getMinutes() !== 0) hourlyOnly = false;
+    }
+
+    const t = egsStartOfLocalInterval(p.ts, intervalM);
     map.set(t, p.value);
     if (minTs == null || t < minTs) minTs = t;
     if (maxTs == null || t > maxTs) maxTs = t;
   }
   if (minTs == null || maxTs == null) return [];
 
-  const out = [];
-  for (let t = minTs; t <= maxTs; t += 3600 * 1000) {
-    out.push({ ts: t, value: map.has(t) ? map.get(t) : null, idx: out.length });
+  // If hourly-only but interval is smaller, fill sub-intervals inside each hour with the hour value.
+  if (intervalM !== 60 && hourlyOnly) {
+    const perHour = Math.max(1, Math.round(60 / intervalM));
+    const hourKeys = Array.from(map.keys()).sort((a, b) => a - b);
+    for (const hourTs of hourKeys) {
+      const v = map.get(hourTs);
+      if (!map.has(hourTs) || !Number.isFinite(v)) continue;
+      for (let j = 1; j < perHour; j++) {
+        const t = hourTs + j * stepMs;
+        if (!map.has(t)) map.set(t, v);
+      }
+    }
   }
 
-  // Ensure the current hour exists in the view (helps show the "Nu" marker even if the feed is lagging).
+  const out = [];
+  for (let t = minTs; t <= maxTs; t += stepMs) {
+    let v = map.has(t) ? map.get(t) : null;
+    // For hourly-only data expanded to smaller intervals: keep the hour value within the hour.
+    if (v == null && intervalM !== 60 && hourlyOnly) {
+      const h0 = egsStartOfLocalHour(t);
+      v = map.has(h0) ? map.get(h0) : null;
+    }
+    out.push({ ts: t, value: v, idx: out.length });
+  }
+
+  // Ensure the current interval exists in the view (helps show the "Nu" marker even if the feed is lagging).
   try {
-    const nowHour = egsStartOfLocalHour(nowTs);
-    if (nowHour > maxTs) {
-      for (let t = maxTs + 3600 * 1000; t <= nowHour; t += 3600 * 1000) {
-        out.push({ ts: t, value: map.has(t) ? map.get(t) : null, idx: out.length });
+    const nowSlot = egsStartOfLocalInterval(nowTs, intervalM);
+    if (nowSlot > maxTs) {
+      for (let t = maxTs + stepMs; t <= nowSlot; t += stepMs) {
+        let v = map.has(t) ? map.get(t) : null;
+        if (v == null && intervalM !== 60 && hourlyOnly) {
+          const h0 = egsStartOfLocalHour(t);
+          v = map.has(h0) ? map.get(h0) : null;
+        }
+        out.push({ ts: t, value: v, idx: out.length });
       }
     }
   } catch {
@@ -906,16 +987,19 @@ function egsFormatRangeByTs(startTs, hours, nowTs, langOrHass) {
   )} ${endH}:${endM}`;
 }
 
-function egsFindCheapestWindow(hourValues, hours) {
-  const h = egsClamp(Number(hours) || 0, 1, 240);
+function egsFindCheapestWindow(hourValues, hours, intervalMinutes) {
+  const intervalM = egsClamp(Number(intervalMinutes) || 60, 1, 60);
+  const perHour = Math.max(1, Math.round(60 / intervalM));
+  const hoursInt = egsClamp(Number(hours) || 0, 1, 240);
+  const steps = egsClamp(Math.round(hoursInt * perHour), 1, 240 * perHour);
   const vals = Array.isArray(hourValues) ? hourValues : [];
-  if (vals.length < h) return null;
+  if (vals.length < steps) return null;
 
   let best = null;
-  for (let start = 0; start <= vals.length - h; start++) {
+  for (let start = 0; start <= vals.length - steps; start++) {
     let sum = 0;
     let ok = true;
-    for (let i = 0; i < h; i++) {
+    for (let i = 0; i < steps; i++) {
       const v = vals[start + i];
       if (!Number.isFinite(v)) {
         ok = false;
@@ -924,22 +1008,25 @@ function egsFindCheapestWindow(hourValues, hours) {
       sum += v;
     }
     if (!ok) continue;
-    if (!best || sum < best.sum) best = { start, hours: h, sum, avg: sum / h };
+    if (!best || sum < best.sum) best = { start, hours: hoursInt, steps, sum, avg: sum / steps };
   }
   return best;
 }
 
-function egsFindCheapestWindowFrom(hourValues, hours, startIndex) {
-  const h = egsClamp(Number(hours) || 0, 1, 240);
+function egsFindCheapestWindowFrom(hourValues, hours, startIndex, intervalMinutes) {
+  const intervalM = egsClamp(Number(intervalMinutes) || 60, 1, 60);
+  const perHour = Math.max(1, Math.round(60 / intervalM));
+  const hoursInt = egsClamp(Number(hours) || 0, 1, 240);
+  const steps = egsClamp(Math.round(hoursInt * perHour), 1, 240 * perHour);
   const vals = Array.isArray(hourValues) ? hourValues : [];
   const start = egsClamp(Number(startIndex) || 0, 0, vals.length);
-  if (vals.length - start < h) return null;
+  if (vals.length - start < steps) return null;
 
   let best = null;
-  for (let s = start; s <= vals.length - h; s++) {
+  for (let s = start; s <= vals.length - steps; s++) {
     let sum = 0;
     let ok = true;
-    for (let i = 0; i < h; i++) {
+    for (let i = 0; i < steps; i++) {
       const v = vals[s + i];
       if (!Number.isFinite(v)) {
         ok = false;
@@ -948,13 +1035,24 @@ function egsFindCheapestWindowFrom(hourValues, hours, startIndex) {
       sum += v;
     }
     if (!ok) continue;
-    if (!best || sum < best.sum) best = { start: s, hours: h, sum, avg: sum / h };
+    if (!best || sum < best.sum) best = { start: s, hours: hoursInt, steps, sum, avg: sum / steps };
   }
   return best;
 }
 
 function egsStorageKey(entityId) {
   return `egs.sections.v1.${egsSafeText(entityId)}`;
+}
+
+function egsSettingsKey(entityId) {
+  return `egs.settings.v1.${egsSafeText(entityId)}`;
+}
+
+function egsNormalizeSettings(raw) {
+  const obj = raw && typeof raw === 'object' ? raw : {};
+  const m = Number(obj.interval_minutes);
+  const interval_minutes = m === 15 ? 15 : 60;
+  return { interval_minutes };
 }
 
 function egsNormalizeSections(raw) {
@@ -1019,6 +1117,24 @@ function egsSaveSections(entityId, sections) {
   }
 }
 
+function egsLoadSettings(entityId) {
+  try {
+    const raw = localStorage.getItem(egsSettingsKey(entityId));
+    if (!raw) return egsNormalizeSettings(null);
+    return egsNormalizeSettings(JSON.parse(raw));
+  } catch {
+    return egsNormalizeSettings(null);
+  }
+}
+
+function egsSaveSettings(entityId, settings) {
+  try {
+    localStorage.setItem(egsSettingsKey(entityId), JSON.stringify(egsNormalizeSettings(settings)));
+  } catch {
+    // ignore
+  }
+}
+
 function egsComputeBars(points, w, h, pad) {
   const innerW = Math.max(1, w - pad.left - pad.right);
   const innerH = Math.max(1, h - pad.top - pad.bottom);
@@ -1043,7 +1159,9 @@ function egsComputeBars(points, w, h, pad) {
   const baselineY = min < 0 && max > 0 ? toY(0) : max <= 0 ? pad.top : pad.top + innerH;
 
   const step = innerW / Math.max(1, n);
-  const barW = Math.max(1, step * 0.72);
+  // Keep bars from getting wider on large cards; use extra space as gap instead.
+  const maxBarW = 24.5;
+  const barW = Math.max(1, Math.min(step * 0.72, maxBarW));
   const barOffset = (step - barW) / 2;
 
   const pts = points.map((p, i) => {
@@ -1095,6 +1213,45 @@ function egsNearestIndexByTime(pts, nowTs) {
   return i;
 }
 
+function egsMsToNextLocalBoundary(nowTs, intervalMinutes) {
+  const intervalM = egsClamp(Number(intervalMinutes) || 60, 1, 60);
+  const now = new Date(nowTs != null ? nowTs : Date.now());
+  const next = new Date(now);
+
+  if (intervalM === 60) {
+    next.setMinutes(0, 0, 0);
+    next.setHours(now.getHours() + 1);
+  } else {
+    const mm = now.getMinutes();
+    const nextMin = Math.floor(mm / intervalM) * intervalM + intervalM;
+    next.setMinutes(nextMin, 0, 0);
+    if (nextMin >= 60) next.setHours(now.getHours() + 1);
+  }
+
+  return Math.max(250, next.getTime() - now.getTime());
+}
+
+function egsScrollGraphToNow(graphEl) {
+  if (!graphEl) return false;
+  try {
+    const max = Math.max(0, (graphEl.scrollWidth || 0) - (graphEl.clientWidth || 0));
+    // Only auto-scroll when a horizontal scrollbar is actually needed.
+    if (max <= 0) return false;
+
+    const svg = graphEl.querySelector('svg');
+    const nowXAttr = svg?.getAttribute?.('data-now-x');
+    const nowX = nowXAttr != null && nowXAttr !== '' ? Number(nowXAttr) : null;
+    if (!Number.isFinite(nowX) || nowX == null) return false;
+
+    // Center "now" in the visible viewport when possible.
+    const desired = nowX - (graphEl.clientWidth || 0) / 2;
+    graphEl.scrollLeft = egsClamp(desired, 0, max);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 class EnergyGraphSchedulerCard extends HTMLElement {
   constructor() {
     super();
@@ -1110,11 +1267,24 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     this._lastEntityRenderKey = null;
     this._sectionsLoadKey = null;
 
+    this._intervalMinutes = 60;
+
     this._syncUnsub = null;
     this._syncSubKey = null;
 
+    this._syncSettingsUnsub = null;
+    this._syncSettingsSubKey = null;
+
     this._syncPollTimer = null;
     this._syncPollKey = null;
+
+    this._syncSettingsPollTimer = null;
+    this._syncSettingsPollKey = null;
+
+    this._nowFollowTimer = null;
+    this._nowFollowKey = null;
+
+    this._egsResizeObserver = null;
   }
 
   static getStubConfig() {
@@ -1153,9 +1323,15 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       this._lastEntityRenderKey = null;
       this._sectionsLoadKey = null;
 
+      this._intervalMinutes = 60;
+
       // Recreate websocket subscription if needed.
       this._syncSubKey = null;
       this._teardownSyncSubscription();
+
+      this._syncSettingsSubKey = null;
+      this._teardownSettingsSubscription();
+      this._stopSettingsPolling();
     }
     this._render();
   }
@@ -1163,11 +1339,57 @@ class EnergyGraphSchedulerCard extends HTMLElement {
   disconnectedCallback() {
     this._teardownSyncSubscription();
     this._stopSyncPolling();
+    this._teardownSettingsSubscription();
+    this._stopSettingsPolling();
+    this._stopNowFollowTimer();
+    try {
+      if (this._egsResizeObserver) this._egsResizeObserver.disconnect();
+    } catch {
+      // ignore
+    }
+  }
+
+  _stopNowFollowTimer() {
+    if (this._nowFollowTimer) {
+      clearTimeout(this._nowFollowTimer);
+      this._nowFollowTimer = null;
+    }
+    this._nowFollowKey = null;
+  }
+
+  _startNowFollowTimer() {
+    // Re-render around interval boundaries so "now" moves and we keep the view aligned.
+    const key = `${egsSafeText(this._config?.entity || '')}|boundary|${this._intervalMinutes === 15 ? 15 : 60}`;
+    if (this._nowFollowKey === key && this._nowFollowTimer) return;
+
+    this._stopNowFollowTimer();
+    this._nowFollowKey = key;
+
+    const tick = () => {
+      if (this._nowFollowKey !== key) return;
+      // Don't steal focus while settings modal is open.
+      if (!this._settingsOpen) this._render();
+      this._nowFollowTimer = setTimeout(tick, egsMsToNextLocalBoundary(Date.now(), this._intervalMinutes));
+    };
+
+    this._nowFollowTimer = setTimeout(tick, egsMsToNextLocalBoundary(Date.now(), this._intervalMinutes));
   }
 
   async _teardownSyncSubscription() {
     const unsub = this._syncUnsub;
     this._syncUnsub = null;
+    if (typeof unsub === "function") {
+      try {
+        await unsub();
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  async _teardownSettingsSubscription() {
+    const unsub = this._syncSettingsUnsub;
+    this._syncSettingsUnsub = null;
     if (typeof unsub === "function") {
       try {
         await unsub();
@@ -1183,6 +1405,14 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       this._syncPollTimer = null;
     }
     this._syncPollKey = null;
+  }
+
+  _stopSettingsPolling() {
+    if (this._syncSettingsPollTimer) {
+      clearInterval(this._syncSettingsPollTimer);
+      this._syncSettingsPollTimer = null;
+    }
+    this._syncSettingsPollKey = null;
   }
 
   _ensureSyncPolling(entityId) {
@@ -1227,6 +1457,45 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     this._syncPollTimer = setInterval(tick, 10000);
   }
 
+  _ensureSettingsPolling(entityId) {
+    const ent = egsSafeText(entityId);
+    const sync = egsSyncEnabled(this._config);
+    if (!sync || !ent || !this._hass) {
+      this._stopSettingsPolling();
+      return;
+    }
+
+    const key = `${ent}|settings_sync`;
+    if (this._syncSettingsPollKey === key && this._syncSettingsPollTimer) return;
+
+    this._stopSettingsPolling();
+    this._syncSettingsPollKey = key;
+
+    const tick = () => {
+      if (this._syncSettingsPollKey !== key) return;
+      if (!egsSyncEnabled(this._config)) return;
+      if (egsSafeText(this._config?.entity) !== ent) return;
+
+      egsWsSend(this._hass, { type: `${EGS_SYNC_DOMAIN}/get_settings`, entity_id: ent })
+        .then((res) => {
+          if (this._syncSettingsPollKey !== key) return;
+          const next = egsNormalizeSettings(res?.settings);
+          const cur = egsNormalizeSettings({ interval_minutes: this._intervalMinutes });
+          if (JSON.stringify(cur) === JSON.stringify(next)) return;
+          this._intervalMinutes = next.interval_minutes === 15 ? 15 : 60;
+          egsSaveSettings(ent, next);
+          this._startNowFollowTimer();
+          this._render();
+        })
+        .catch(() => {
+          // ignore
+        });
+    };
+
+    // Poll every 10s; cheap and avoids hard refresh.
+    this._syncSettingsPollTimer = setInterval(tick, 10000);
+  }
+
   async _ensureSyncSubscription(entityId) {
     const ent = egsSafeText(entityId);
     const sync = egsSyncEnabled(this._config);
@@ -1264,6 +1533,43 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     }
   }
 
+  async _ensureSettingsSubscription(entityId) {
+    const ent = egsSafeText(entityId);
+    const sync = egsSyncEnabled(this._config);
+    if (!sync || !ent || !this._hass?.connection?.subscribeMessage) {
+      if (this._syncSettingsUnsub) this._teardownSettingsSubscription();
+      this._syncSettingsSubKey = null;
+      return;
+    }
+
+    const key = `${ent}|settings_sync`;
+    if (this._syncSettingsSubKey === key && this._syncSettingsUnsub) return;
+
+    await this._teardownSettingsSubscription();
+    this._syncSettingsSubKey = key;
+
+    try {
+      const conn = this._hass.connection;
+      const unsub = await conn.subscribeMessage(
+        (msg) => {
+          if (msg && msg.type === "event" && msg.event) {
+            const ev = msg.event;
+            if (egsSafeText(ev.entity_id) !== ent) return;
+            const next = egsNormalizeSettings(ev.settings);
+            this._intervalMinutes = next.interval_minutes === 15 ? 15 : 60;
+            egsSaveSettings(ent, next);
+            this._startNowFollowTimer();
+            this._render();
+          }
+        },
+        { type: `${EGS_SYNC_DOMAIN}/subscribe_settings`, entity_id: ent }
+      );
+      this._syncSettingsUnsub = unsub;
+    } catch {
+      this._syncSettingsSubKey = null;
+    }
+  }
+
   _requestSectionsLoad(entityId) {
     const ent = egsSafeText(entityId);
     if (!ent) return;
@@ -1277,9 +1583,20 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     // Fast path: show local immediately
     this._sections = local;
 
+    // Load per-entity settings (local only)
+    try {
+      const st = egsLoadSettings(ent);
+      this._intervalMinutes = st.interval_minutes === 15 ? 15 : 60;
+    } catch {
+      this._intervalMinutes = 60;
+    }
+
     // Ensure we receive live updates (no hard refresh needed)
     this._ensureSyncSubscription(ent);
     this._ensureSyncPolling(ent);
+
+    this._ensureSettingsSubscription(ent);
+    this._ensureSettingsPolling(ent);
 
     if (!sync) return;
     const hass = this._hass;
@@ -1305,6 +1622,40 @@ class EnergyGraphSchedulerCard extends HTMLElement {
             type: `${EGS_SYNC_DOMAIN}/set_sections`,
             entity_id: ent,
             sections: local,
+          }).catch(() => {});
+        }
+      })
+      .catch(() => {
+        // Keep local on error
+      });
+
+    egsWsSend(hass, { type: `${EGS_SYNC_DOMAIN}/get_settings`, entity_id: ent })
+      .then((res) => {
+        // Ignore stale responses.
+        if (this._sectionsLoadKey !== key) return;
+        if (egsSafeText(this._config?.entity) !== ent) return;
+
+        const exists = !!res?.exists;
+        const next = egsNormalizeSettings(res?.settings);
+
+        if (exists) {
+          const cur = egsNormalizeSettings({ interval_minutes: this._intervalMinutes });
+          if (JSON.stringify(cur) !== JSON.stringify(next)) {
+            this._intervalMinutes = next.interval_minutes === 15 ? 15 : 60;
+            egsSaveSettings(ent, next);
+            this._startNowFollowTimer();
+            this._render();
+          }
+          return;
+        }
+
+        // Backend has no settings yet: seed from local if non-default.
+        const curM = this._intervalMinutes === 15 ? 15 : 60;
+        if (curM !== 60) {
+          egsWsSend(hass, {
+            type: `${EGS_SYNC_DOMAIN}/set_settings`,
+            entity_id: ent,
+            settings: { interval_minutes: curM },
           }).catch(() => {});
         }
       })
@@ -1365,6 +1716,9 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       // Keep subscription alive even when only hass ticks.
       this._ensureSyncSubscription(entityId);
       this._ensureSyncPolling(entityId);
+
+      this._ensureSettingsSubscription(entityId);
+      this._ensureSettingsPolling(entityId);
     } catch {
       this._render();
     }
@@ -1382,6 +1736,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     } catch {
       // ignore
     }
+    this._startNowFollowTimer();
     this._render();
   }
 
@@ -1484,7 +1839,8 @@ class EnergyGraphSchedulerCard extends HTMLElement {
         bodyHtml = `<div class="hint">${egsSafeText(t('hint.no_price_data'))}: <span class="mono">${entityId}</span></div>`;
       } else {
         const nowTs = Date.now();
-        const timeline = egsBuildTimeline(points, nowTs);
+        const intervalM = this._intervalMinutes === 15 ? 15 : 60;
+        const timeline = egsBuildTimeline(points, nowTs, intervalM);
         const hourValues = timeline.map((p) => (Number.isFinite(p.value) ? p.value : null));
 
         // Only consider hours from "now" and forward when suggesting cheapest times.
@@ -1492,16 +1848,25 @@ class EnergyGraphSchedulerCard extends HTMLElement {
         try {
           const hasTs = timeline?.some?.((p) => p && p.ts != null);
           if (hasTs) {
-            const nowHour = egsStartOfLocalHour(nowTs);
-            const idx = timeline.findIndex((p) => p && p.ts != null && p.ts >= nowHour);
+            const nowSlot = egsStartOfLocalInterval(nowTs, intervalM);
+            const idx = timeline.findIndex((p) => p && p.ts != null && p.ts >= nowSlot);
             futureStartIdx = idx >= 0 ? idx : timeline.length;
           }
         } catch {
           futureStartIdx = 0;
         }
 
-        const stepPx = 34;
-        const width = pad.left + pad.right + timeline.length * stepPx;
+        const baseStepPx = 34;
+
+        const nSteps = Math.max(1, timeline.length);
+        const minWidth = pad.left + pad.right + nSteps * baseStepPx;
+
+        // Fill the available card width when possible, so the timeline appears centered.
+        // Use a tiny negative fudge to avoid a 1px scrollbar due to rounding.
+        // Extra safety pixels to avoid a 1–2px overflow caused by subpixel rounding
+        // in HA's card/layout wrappers.
+        const availableW = hostW > 0 ? Math.max(0, Math.floor(hostW - 24) - 6) : 0; // .wrap has 12px left/right padding
+        const width = Math.max(minWidth, availableW);
         const bars = egsComputeBars(timeline, width, height, pad);
         if (!bars) {
           bodyHtml = `<div class="hint">${egsSafeText(t('hint.cannot_build_graph'))}</div>`;
@@ -1550,7 +1915,15 @@ class EnergyGraphSchedulerCard extends HTMLElement {
           const hourLabels = bars.pts
             .map((p, i) => {
               const d = p.ts != null ? new Date(p.ts) : null;
-              const hh = d ? `${d.getHours()}`.padStart(2, "0") : `${i % 24}`.padStart(2, "0");
+              if (d) {
+                // Reduce label noise in 15-min mode: label only on full hours.
+                if (intervalM !== 60 && d.getMinutes() !== 0) return "";
+                const hh = `${d.getHours()}`.padStart(2, "0");
+                return `<text x="${p.xCenter.toFixed(2)}" y="${(pad.top - 8).toFixed(
+                  2
+                )}" text-anchor="middle" class="xlab">${hh}</text>`;
+              }
+              const hh = `${Math.floor(i / Math.max(1, Math.round(60 / intervalM))) % 24}`.padStart(2, "0");
               return `<text x="${p.xCenter.toFixed(2)}" y="${(pad.top - 8).toFixed(
                 2
               )}" text-anchor="middle" class="xlab">${hh}</text>`;
@@ -1565,14 +1938,14 @@ class EnergyGraphSchedulerCard extends HTMLElement {
           const selectedSection =
             selIdx != null && selIdx >= 0 && selIdx < secsForSel.length ? secsForSel[selIdx] : null;
           const selectedWindow = selectedSection
-            ? egsFindCheapestWindowFrom(hourValues, selectedSection.hours, futureStartIdx)
+            ? egsFindCheapestWindowFrom(hourValues, selectedSection.hours, futureStartIdx, intervalM)
             : null;
 
           const marks = (() => {
             if (!selectedWindow) return "";
             const start = egsClamp(Number(selectedWindow?.start) || 0, 0, bars.pts.length - 1);
-            const hrs = egsClamp(Number(selectedWindow?.hours) || 0, 1, bars.pts.length);
-            const end = egsClamp(start + hrs, 1, bars.pts.length);
+            const steps = egsClamp(Number(selectedWindow?.steps) || 0, 1, bars.pts.length);
+            const end = egsClamp(start + steps, 1, bars.pts.length);
             const p0 = bars.pts[start];
             const p1 = bars.pts[end - 1];
             if (!p0 || !p1) return "";
@@ -1631,9 +2004,9 @@ class EnergyGraphSchedulerCard extends HTMLElement {
               const inSel =
                 selectedWindow &&
                 Number.isFinite(selectedWindow.start) &&
-                Number.isFinite(selectedWindow.hours) &&
+                Number.isFinite(selectedWindow.steps) &&
                 i >= selectedWindow.start &&
-                i < selectedWindow.start + selectedWindow.hours;
+                i < selectedWindow.start + selectedWindow.steps;
               const cls = `bar ${tier}${isNow ? " bar-now" : ""}${inSel ? " bar-mark" : ""}`;
               const r = Math.min(6, Math.max(0, p.w / 2 - 1), Math.max(0, p.h / 2));
               const valTxt = Number.isFinite(p.value) ? p.value.toFixed(3) : "";
@@ -1643,6 +2016,8 @@ class EnergyGraphSchedulerCard extends HTMLElement {
               )}" rx="${r.toFixed(2)}" ry="${r.toFixed(2)}" class="${cls}" data-idx="${i}" data-val="${valTxt}"${tsAttr} />`;
             })
             .join("");
+
+          const nowXAttr = nowPoint ? `${Number(nowPoint.xCenter).toFixed(2)}` : "";
 
           bodyHtml = `
             <div class="meta">
@@ -1655,7 +2030,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
             </div>
             <div class="graph">
               <div class="tooltip" hidden></div>
-              <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="Price graph" style="width:${width}px; height:160px;">
+              <svg data-now-x="${nowXAttr}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="Price graph" style="width:${width}px; height:160px;">
                 <defs>
                   <linearGradient id="egsFillLow" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stop-color="var(--success-color)" stop-opacity="0.85" />
@@ -1684,7 +2059,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
               if (!secs.length) return "";
               const items = secs
                 .map((s, si) => {
-                  const best = egsFindCheapestWindowFrom(hourValues, s.hours, futureStartIdx);
+                  const best = egsFindCheapestWindowFrom(hourValues, s.hours, futureStartIdx, intervalM);
                   const active = this._selectedSectionIdx === si;
                   if (!best) {
                     return `<div class="sec-card${active ? " active" : ""}" data-sec-idx="${si}"><div class="sec-name">${egsSafeText(
@@ -1709,9 +2084,25 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     }
 
     const css = `
-      :host{ display:block; }
-      ha-card{ overflow:hidden; }
-      .wrap{ padding: 12px; }
+      /*
+        Important: Home Assistant layouts often use flex. Flex items default to
+        min-width:auto, which can make the card expand to the SVG's width.
+        Setting min-width:0 allows the card to shrink and makes the internal
+        .graph scroller (and its scrollbar) work reliably.
+      */
+      :host{
+        display:block;
+        box-sizing:border-box;
+        width:100%;
+        min-width:0;
+        justify-self: stretch;
+        align-self: stretch;
+        /* Prevent layout-card grid from sizing the column to SVG max-content width */
+        max-width: min(100%, 100vw);
+        flex: 1 1 0;
+      }
+      ha-card{ overflow:hidden; box-sizing:border-box; width:100%; min-width:0; max-width:100%; }
+      .wrap{ padding: 12px; min-width:0; }
       .hdr{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding: 12px 12px 0 12px; }
       .hdr-title{ color: var(--primary-text-color); font-size: 20px; font-weight: 600; line-height: 1.2; }
       .hdr-btn{ appearance:none; border: 1px solid var(--divider-color); background: transparent; color: var(--primary-text-color); border-radius: 10px; padding: 6px 10px; font-size: 12px; cursor: pointer; }
@@ -1723,7 +2114,22 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       .name{ color: var(--primary-text-color); font-weight: 600; line-height: 1.2; }
       .stats{ display:flex; gap: 14px; flex-wrap: wrap; color: var(--secondary-text-color); font-size: 12px; }
       .stats b{ color: var(--primary-text-color); font-weight: 600; }
-      .graph{ display:block; width:100%; position:relative; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling: touch; }
+      .graph{
+        display:block;
+        width:100%;
+        max-width:100%;
+        min-width:0;
+        position:relative;
+        overflow-x:auto;
+        overflow-y:hidden;
+        -webkit-overflow-scrolling: touch;
+        /*
+          Key fix for layout-card grid: prevent this scroll area’s contents
+          (the wide SVG) from affecting the card’s intrinsic width.
+        */
+        height:160px;
+        contain: size layout paint;
+      }
       /* Fixed height keeps labels readable on small cards */
       .graph svg{ height:160px; display:block; }
       .grid{ stroke: var(--divider-color); stroke-width: 1; opacity: 0.35; }
@@ -1779,6 +2185,8 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       .item{ display:flex; align-items:center; justify-content:space-between; gap: 10px; border:1px solid var(--divider-color); border-radius: 12px; padding: 10px; }
       .item strong{ color: var(--primary-text-color); }
       .item span{ color: var(--secondary-text-color); font-size: 12px; }
+      .checkrow{ display:flex; align-items:center; gap: 10px; padding: 8px 10px; border: 1px solid var(--divider-color); border-radius: 12px; }
+      .checkrow input{ width: 18px; height: 18px; }
     `;
 
     const modalHtml = (() => {
@@ -1802,6 +2210,13 @@ class EnergyGraphSchedulerCard extends HTMLElement {
               <button class="iconbtn" data-act="close" aria-label="${egsSafeText(t('settings.close'))}">✕</button>
             </div>
             <div class="modal-body">
+              <div>
+                <div class="lab">${egsSafeText(t('settings.interval'))}</div>
+                <label class="checkrow">
+                  <input type="checkbox" data-field="quarter" ${this._intervalMinutes === 15 ? 'checked' : ''} />
+                  <span>${egsSafeText(t('settings.quarter_hours'))}</span>
+                </label>
+              </div>
               <div>
                 <div class="lab">${egsSafeText(t('settings.add_section'))}</div>
                 <div class="formrow">
@@ -1847,11 +2262,16 @@ class EnergyGraphSchedulerCard extends HTMLElement {
         const restore = () => {
           try {
             const max = Math.max(0, (graph.scrollWidth || 0) - (graph.clientWidth || 0));
-            const desired =
-              this._graphScrollRatio != null && Number.isFinite(this._graphScrollRatio)
-                ? this._graphScrollRatio * max
-                : this._graphScrollLeft || 0;
-            graph.scrollLeft = egsClamp(desired, 0, max);
+            // When the graph is scrollable (small card), always follow "now".
+            // When it's not scrollable, the scroll position is irrelevant.
+            const followed = egsScrollGraphToNow(graph);
+            if (!followed) {
+              const desired =
+                this._graphScrollRatio != null && Number.isFinite(this._graphScrollRatio)
+                  ? this._graphScrollRatio * max
+                  : this._graphScrollLeft || 0;
+              graph.scrollLeft = egsClamp(desired, 0, max);
+            }
           } catch {
             // ignore
           }
@@ -1872,6 +2292,21 @@ class EnergyGraphSchedulerCard extends HTMLElement {
             // ignore
           }
         };
+
+        // If layout changes (dashboard resize, mobile rotation), re-follow now.
+        try {
+          const onResize = () => {
+            // Only do anything when scrollable.
+            egsScrollGraphToNow(graph);
+          };
+          if (!this._egsResizeObserver) {
+            this._egsResizeObserver = new ResizeObserver(() => onResize());
+          }
+          this._egsResizeObserver.disconnect();
+          this._egsResizeObserver.observe(graph);
+        } catch {
+          // ignore
+        }
       }
     } catch {
       // ignore
@@ -1968,6 +2403,41 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     // Modal event wiring (best-effort)
     if (this._settingsOpen) {
       const root = this.shadowRoot;
+
+      // Interval resolution toggle (local per-entity setting)
+      try {
+        const cb = root.querySelector('[data-field="quarter"]');
+        if (cb) {
+          cb.onchange = () => {
+            const enabled = !!cb.checked;
+            this._intervalMinutes = enabled ? 15 : 60;
+            try {
+              if (entityId) egsSaveSettings(entityId, { interval_minutes: this._intervalMinutes });
+            } catch {
+              // ignore
+            }
+
+            // If sync is enabled, persist to backend so other users/cards follow.
+            try {
+              if (entityId && egsSyncEnabled(this._config) && this._hass) {
+                egsWsSend(this._hass, {
+                  type: `${EGS_SYNC_DOMAIN}/set_settings`,
+                  entity_id: entityId,
+                  settings: { interval_minutes: this._intervalMinutes },
+                }).catch(() => {});
+              }
+            } catch {
+              // ignore
+            }
+
+            this._startNowFollowTimer();
+            this._render();
+          };
+        }
+      } catch {
+        // ignore
+      }
+
       root.querySelectorAll('[data-act="close"]').forEach((el) => {
         el.onclick = (ev) => {
           // If backdrop clicked, only close when clicking outside dialog.
