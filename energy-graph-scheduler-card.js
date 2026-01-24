@@ -3,7 +3,7 @@
 
 const EGS_CARD_TAG = "energy-graph-scheduler-card";
 const EGS_EDITOR_TAG = "energy-graph-scheduler-card-editor";
-const EGS_CARD_VERSION = "0.1.2";
+const EGS_CARD_VERSION = "0.1.3";
 const EGS_SYNC_DOMAIN = "energy_graph_scheduler";
 
 // ---- energy-graph-scheduler i18n (namespaced) ----
@@ -45,6 +45,11 @@ const EGS_I18N = {
     'editor.title_optional': 'Title (optional)',
     'editor.entity_label': 'Electricity price entity',
     'editor.entity_picker': 'Select entity',
+
+    'editor.tomorrow_toggle': 'Use separate entity for tomorrow',
+    'editor.tomorrow_desc': 'Enable if your setup splits today and tomorrow prices into separate sensors.',
+    'editor.tomorrow_entity_label': 'Electricity price entity (tomorrow)',
+    'editor.tomorrow_entity_picker': 'Select entity',
     'editor.sync_optional': 'Sync (optional)',
     'editor.sync_title': 'Share “cheapest times” between users',
     'editor.sync_desc': 'Store in Home Assistant (.storage) via integration',
@@ -85,6 +90,11 @@ const EGS_I18N = {
     'editor.title_optional': 'Titel (valgfri)',
     'editor.entity_label': 'Strømpris entity',
     'editor.entity_picker': 'Vælg entity',
+
+    'editor.tomorrow_toggle': 'Brug separat entity til i morgen',
+    'editor.tomorrow_desc': 'Slå til hvis dine priser er delt op i dag og i morgen.',
+    'editor.tomorrow_entity_label': 'Strømpris entity (i morgen)',
+    'editor.tomorrow_entity_picker': 'Vælg entity',
     'editor.sync_optional': 'Sync (valgfri)',
     'editor.sync_title': 'Del "billigste tider" mellem brugere',
     'editor.sync_desc': 'Gem i Home Assistant (.storage) via integration',
@@ -687,8 +697,10 @@ function egsGet(obj, keys) {
   return undefined;
 }
 
-function egsExtractSeries(stateObj) {
+function egsExtractSeries(stateObj, mode) {
   const attrs = stateObj?.attributes || {};
+
+  const m = (mode || 'combined').toString();
 
   // Prefer combining today + tomorrow when available (common for electricity price sensors).
   const todayKeys = ["raw_today", "today", "prices", "price", "data", "values"];
@@ -713,10 +725,17 @@ function egsExtractSeries(stateObj) {
   }
 
   let raw = null;
-  if (Array.isArray(todayRaw) && todayRaw.length) {
-    raw = Array.isArray(tomorrowRaw) && tomorrowRaw.length ? [...todayRaw, ...tomorrowRaw] : todayRaw;
+  if (m === 'today') {
+    raw = Array.isArray(todayRaw) && todayRaw.length ? todayRaw : tomorrowRaw;
+  } else if (m === 'tomorrow') {
+    raw = Array.isArray(tomorrowRaw) && tomorrowRaw.length ? tomorrowRaw : todayRaw;
   } else {
-    raw = tomorrowRaw;
+    // combined
+    if (Array.isArray(todayRaw) && todayRaw.length) {
+      raw = Array.isArray(tomorrowRaw) && tomorrowRaw.length ? [...todayRaw, ...tomorrowRaw] : todayRaw;
+    } else {
+      raw = tomorrowRaw;
+    }
   }
 
   if (!Array.isArray(raw) || !raw.length) return { points: [], unit: attrs.unit_of_measurement || "" };
@@ -1293,6 +1312,8 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       // Localize default title based on browser language; editor/runtime will further adapt to HA language
       title: egsLocalize('card.title_default', navigator.language || 'en'),
       entity: "",
+      use_tomorrow_entity: false,
+      tomorrow_entity: "",
       sync: false,
       language: "", // "" = auto (Home Assistant)
     };
@@ -1302,6 +1323,8 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     if (!config || typeof config !== "object") throw new Error("Invalid configuration");
     const stub = EnergyGraphSchedulerCard.getStubConfig();
     const prevEntity = this._config?.entity || "";
+    const prevUseTomorrow = !!this._config?.use_tomorrow_entity;
+    const prevTomorrowEntity = this._config?.tomorrow_entity || "";
     const prevSync = !!this._config?.sync;
     this._config = {
       ...stub,
@@ -1309,6 +1332,8 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       // Ensure entity/title defaults are always strings
       title: config.title ?? stub.title,
       entity: config.entity || "",
+      use_tomorrow_entity: !!config.use_tomorrow_entity,
+      tomorrow_entity: config.tomorrow_entity || "",
       sync: !!config.sync,
       language: typeof config.language === 'string' ? config.language : stub.language,
       // Never lose type
@@ -1317,8 +1342,15 @@ class EnergyGraphSchedulerCard extends HTMLElement {
 
     // If entity changed, allow re-render even if hass is spamming updates.
     const nextEntity = this._config?.entity || "";
+    const nextUseTomorrow = !!this._config?.use_tomorrow_entity;
+    const nextTomorrowEntity = this._config?.tomorrow_entity || "";
     const nextSync = !!this._config?.sync;
-    if (prevEntity !== nextEntity || prevSync !== nextSync) {
+    if (
+      prevEntity !== nextEntity ||
+      prevSync !== nextSync ||
+      prevUseTomorrow !== nextUseTomorrow ||
+      prevTomorrowEntity !== nextTomorrowEntity
+    ) {
       this._lastEntityId = "";
       this._lastEntityRenderKey = null;
       this._sectionsLoadKey = null;
@@ -1359,7 +1391,9 @@ class EnergyGraphSchedulerCard extends HTMLElement {
 
   _startNowFollowTimer() {
     // Re-render around interval boundaries so "now" moves and we keep the view aligned.
-    const key = `${egsSafeText(this._config?.entity || '')}|boundary|${this._intervalMinutes === 15 ? 15 : 60}`;
+    const useTomorrow = !!this._config?.use_tomorrow_entity;
+    const tEnt = useTomorrow ? egsSafeText(this._config?.tomorrow_entity || '') : '';
+    const key = `${egsSafeText(this._config?.entity || '')}|${tEnt}|boundary|${this._intervalMinutes === 15 ? 15 : 60}`;
     if (this._nowFollowKey === key && this._nowFollowTimer) return;
 
     this._stopNowFollowTimer();
@@ -1689,21 +1723,35 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     // Avoid full re-render on every hass tick; only re-render when the selected
     // entity actually updates (this also prevents scroll from snapping back).
     try {
-      const entityId = egsSafeText(this._config?.entity || "");
-      if (!entityId) {
+      const primaryEntityId = egsSafeText(this._config?.entity || "");
+      const useTomorrow = !!this._config?.use_tomorrow_entity;
+      const tomorrowEntityId = useTomorrow ? egsSafeText(this._config?.tomorrow_entity || "") : "";
+      const entityKey = `${primaryEntityId}||${tomorrowEntityId}`;
+
+      if (!primaryEntityId) {
         this._render();
         return;
       }
 
-      const st = hass?.states?.[entityId] || null;
-      const key = st
+      const st = hass?.states?.[primaryEntityId] || null;
+      const stTomorrow = tomorrowEntityId ? hass?.states?.[tomorrowEntityId] || null : null;
+
+      const keyToday = st
         ? `${egsSafeText(st.state)}|${egsSafeText(st.last_updated)}|${egsSafeText(st.last_changed)}`
         : "__missing__";
+      const keyTomorrow = tomorrowEntityId
+        ? (stTomorrow
+            ? `${egsSafeText(stTomorrow.state)}|${egsSafeText(stTomorrow.last_updated)}|${egsSafeText(
+                stTomorrow.last_changed
+              )}`
+            : "__missing__")
+        : "__none__";
+      const key = `${keyToday}||${keyTomorrow}`;
 
-      if (this._lastEntityId !== entityId) {
-        this._lastEntityId = entityId;
+      if (this._lastEntityId !== entityKey) {
+        this._lastEntityId = entityKey;
         this._lastEntityRenderKey = key;
-        this._requestSectionsLoad(entityId);
+        this._requestSectionsLoad(primaryEntityId);
         this._render();
         return;
       }
@@ -1714,11 +1762,11 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       }
 
       // Keep subscription alive even when only hass ticks.
-      this._ensureSyncSubscription(entityId);
-      this._ensureSyncPolling(entityId);
+      this._ensureSyncSubscription(primaryEntityId);
+      this._ensureSyncPolling(primaryEntityId);
 
-      this._ensureSettingsSubscription(entityId);
-      this._ensureSettingsPolling(entityId);
+      this._ensureSettingsSubscription(primaryEntityId);
+      this._ensureSettingsPolling(primaryEntityId);
     } catch {
       this._render();
     }
@@ -1799,7 +1847,10 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     }
 
     const entityId = egsSafeText(config.entity);
+    const useTomorrowEntity = !!config.use_tomorrow_entity;
+    const tomorrowEntityId = useTomorrowEntity ? egsSafeText(config.tomorrow_entity) : "";
     const stateObj = entityId ? hass?.states?.[entityId] : null;
+    const tomorrowStateObj = tomorrowEntityId ? hass?.states?.[tomorrowEntityId] : null;
 
     const rawTitle = egsSafeText(config.title || "");
     const titleDefaultCandidates = (() => {
@@ -1819,7 +1870,6 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       : rawTitle;
 
     const unit = stateObj?.attributes?.unit_of_measurement || "";
-    const friendly = stateObj?.attributes?.friendly_name || entityId;
 
     // Scrollable chart: width is derived from how many hours we can show.
     const height = 160; // SVG coordinate height
@@ -1833,7 +1883,14 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     } else if (!stateObj) {
       bodyHtml = `<div class="hint">${egsSafeText(t('hint.entity_not_found'))}: <span class="mono">${entityId}</span></div>`;
     } else {
-      const { points } = egsExtractSeries(stateObj);
+      let points = [];
+      if (useTomorrowEntity && tomorrowEntityId) {
+        const todayPoints = egsExtractSeries(stateObj, 'today')?.points || [];
+        const tomPoints = tomorrowStateObj ? egsExtractSeries(tomorrowStateObj, 'tomorrow')?.points || [] : [];
+        points = [...todayPoints, ...tomPoints];
+      } else {
+        points = egsExtractSeries(stateObj)?.points || [];
+      }
 
       if (!points.length) {
         bodyHtml = `<div class="hint">${egsSafeText(t('hint.no_price_data'))}: <span class="mono">${entityId}</span></div>`;
@@ -2021,7 +2078,6 @@ class EnergyGraphSchedulerCard extends HTMLElement {
 
           bodyHtml = `
             <div class="meta">
-              <div class="name">${egsSafeText(friendly)}</div>
               <div class="stats">
                 <span>${egsSafeText(t('stats.min'))}: <b>${minTxt}</b> ${egsSafeText(unit)}</span>
                 <span>${egsSafeText(t('stats.now'))}: <b>${nowTxt}</b> ${egsSafeText(unit)}</span>
@@ -2501,6 +2557,8 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
       type: (config && config.type) || stub.type,
       title: (config && config.title) != null ? config.title : stub.title,
       entity: (config && config.entity) || "",
+      use_tomorrow_entity: !!(config && config.use_tomorrow_entity),
+      tomorrow_entity: (config && config.tomorrow_entity) || "",
       sync: !!(config && config.sync),
       language: typeof (config && config.language) === 'string' ? config.language : stub.language,
     };
@@ -2536,12 +2594,14 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
 
   _applyHassToPickers() {
     if (!this.shadowRoot) return;
-    const picker = this.shadowRoot.querySelector("tt-entity-picker.picker");
-    if (!picker) return;
-    try {
-      picker.hass = this._hass;
-    } catch {
-      // ignore
+    const pickers = this.shadowRoot.querySelectorAll("tt-entity-picker.picker-primary, tt-entity-picker.picker-tomorrow");
+    if (!pickers || !pickers.length) return;
+    for (const picker of pickers) {
+      try {
+        picker.hass = this._hass;
+      } catch {
+        // ignore
+      }
     }
   }
 
@@ -2549,16 +2609,45 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
     if (!this.shadowRoot) return;
     const title = egsSafeText(this._config?.title ?? "");
     const entity = egsSafeText(this._config?.entity ?? "");
+    const useTomorrowEntity = !!this._config?.use_tomorrow_entity;
+    const tomorrowEntity = egsSafeText(this._config?.tomorrow_entity ?? "");
     const sync = !!this._config?.sync;
     const language = egsSafeText(this._config?.language ?? "");
 
     const titleEl = this.shadowRoot.querySelector("input.title");
     if (titleEl && titleEl.value !== title) titleEl.value = title;
 
-    const picker = this.shadowRoot.querySelector("tt-entity-picker.picker");
-    if (picker) {
+    const pickerPrimary = this.shadowRoot.querySelector("tt-entity-picker.picker-primary");
+    if (pickerPrimary) {
       try {
-        picker.value = entity;
+        pickerPrimary.value = entity;
+      } catch {
+        // ignore
+      }
+    }
+
+    const useTomorrowEl = this.shadowRoot.querySelector("input.use-tomorrow");
+    if (useTomorrowEl && useTomorrowEl.checked !== useTomorrowEntity) useTomorrowEl.checked = useTomorrowEntity;
+
+    // Keep UI disabled-state in sync even when we don't re-render (editor reopen flow).
+    const tomorrowSub = this.shadowRoot.querySelector(".sub");
+    if (tomorrowSub && tomorrowSub.classList) {
+      if (useTomorrowEntity) tomorrowSub.classList.remove("disabled");
+      else tomorrowSub.classList.add("disabled");
+    }
+
+    const pickerTomorrow = this.shadowRoot.querySelector("tt-entity-picker.picker-tomorrow");
+    if (pickerTomorrow) {
+      try {
+        pickerTomorrow.value = tomorrowEntity;
+      } catch {
+        // ignore
+      }
+
+      try {
+        pickerTomorrow.disabled = !useTomorrowEntity;
+        if (useTomorrowEntity) pickerTomorrow.removeAttribute("disabled");
+        else pickerTomorrow.setAttribute("disabled", "");
       } catch {
         // ignore
       }
@@ -2577,6 +2666,8 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
     const hass = this._hass;
     const entity = egsSafeText(this._config?.entity);
     const title = egsSafeText(this._config?.title ?? "");
+    const useTomorrowEntity = !!this._config?.use_tomorrow_entity;
+    const tomorrowEntity = egsSafeText(this._config?.tomorrow_entity ?? "");
     const sync = !!this._config?.sync;
     const language = egsSafeText(this._config?.language ?? "");
 
@@ -2615,11 +2706,20 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
       input:focus{ outline:none; border-color: var(--primary-color); box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary-color) 35%, transparent); }
       select{ width:100%; height:36px; box-sizing:border-box; border:1px solid var(--divider-color); border-radius:8px; padding:6px 10px; background: var(--card-background-color); color: var(--primary-text-color); }
       select:focus{ outline:none; border-color: var(--primary-color); box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary-color) 35%, transparent); }
-      .row{ display:flex; align-items:center; justify-content:space-between; gap: 12px; border:1px solid var(--divider-color); border-radius:10px; padding: 10px; }
+      .box{ border:1px solid var(--divider-color); border-radius: 14px; padding: 12px; background: color-mix(in oklab, var(--card-background-color) 92%, transparent); }
+      .box .boxhdr{ display:flex; align-items:flex-start; justify-content:space-between; gap: 12px; margin-bottom: 10px; }
+      .box .boxhdr .txt{ display:flex; flex-direction:column; gap: 4px; }
+      .box .boxhdr .t1{ color: var(--primary-text-color); font-weight: 700; font-size: 13px; line-height: 1.2; }
+      .box .boxhdr .t2{ color: var(--secondary-text-color); font-size: 12px; line-height: 1.3; }
+      .box .content{ display:grid; grid-template-columns: 1fr; gap: 10px; }
+      .box .sub{ padding-top: 10px; border-top: 1px solid var(--divider-color); }
+      .box .sub.disabled{ opacity: 0.55; }
+      .row{ display:flex; align-items:center; justify-content:space-between; gap: 12px; }
       .row .txt{ display:flex; flex-direction:column; gap: 2px; }
       .row .t1{ color: var(--primary-text-color); font-weight: 600; font-size: 13px; }
       .row .t2{ color: var(--secondary-text-color); font-size: 12px; }
       input.sync{ width:18px; height:18px; margin:0; }
+      input.use-tomorrow{ width:18px; height:18px; margin:0; }
     `;
 
     this.shadowRoot.innerHTML = `
@@ -2633,18 +2733,45 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
           <div class="label">${egsSafeText(t('editor.language'))}</div>
           <select class="language">${langOptions}</select>
         </div>
-        <div>
-          <div class="label">${egsSafeText(t('editor.entity_label'))}</div>
-          <tt-entity-picker class="picker" label="${egsSafeText(t('editor.entity_picker'))}" include-domains='["sensor"]'></tt-entity-picker>
+        <div class="box">
+          <div class="boxhdr">
+            <div class="txt">
+              <div class="t1">${egsSafeText(t('editor.entity_label'))}</div>
+              <div class="t2">${egsSafeText(t('editor.entity_picker'))}</div>
+            </div>
+          </div>
+          <div class="content">
+            <tt-entity-picker class="picker-primary" label="${egsSafeText(t('editor.entity_picker'))}" include-domains='["sensor","binary_sensor"]'></tt-entity-picker>
+          </div>
+        </div>
+
+        <div class="box">
+          <div class="boxhdr">
+            <div class="txt">
+              <div class="t1">${egsSafeText(t('editor.tomorrow_toggle'))}</div>
+              <div class="t2">${egsSafeText(t('editor.tomorrow_desc'))}</div>
+            </div>
+            <input class="use-tomorrow" type="checkbox" ${useTomorrowEntity ? "checked" : ""} />
+          </div>
+          <div class="content">
+            <div class="sub ${useTomorrowEntity ? '' : 'disabled'}">
+              <div class="label">${egsSafeText(t('editor.tomorrow_entity_label'))}</div>
+              <tt-entity-picker class="picker-tomorrow" ${useTomorrowEntity ? '' : 'disabled'} label="${egsSafeText(
+                t('editor.tomorrow_entity_picker')
+              )}" include-domains='["sensor","binary_sensor"]'></tt-entity-picker>
+            </div>
+          </div>
         </div>
         <div>
           <div class="label">${egsSafeText(t('editor.sync_optional'))}</div>
-          <div class="row">
+          <div class="box">
+            <div class="boxhdr">
             <div class="txt">
               <div class="t1">${egsSafeText(t('editor.sync_title'))}</div>
               <div class="t2">${egsSafeText(t('editor.sync_desc'))}</div>
             </div>
             <input class="sync" type="checkbox" ${sync ? "checked" : ""} />
+            </div>
           </div>
         </div>
       </div>
@@ -2688,18 +2815,18 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
       };
     }
 
-    const picker = this.shadowRoot.querySelector(".picker");
-    if (picker) {
+    const pickerPrimary = this.shadowRoot.querySelector(".picker-primary");
+    if (pickerPrimary) {
       // Track whether the dropdown is open; prevents hass updates from killing it.
       try {
-        picker.addEventListener(
+        pickerPrimary.addEventListener(
           "picker-opened",
           () => {
             this._pickerOpen = true;
           },
           { passive: true }
         );
-        picker.addEventListener(
+        pickerPrimary.addEventListener(
           "picker-closed",
           () => {
             setTimeout(() => {
@@ -2714,23 +2841,73 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
       }
 
       try {
-        picker.hass = hass;
+        pickerPrimary.hass = hass;
       } catch {
         // ignore
       }
 
       try {
         // ha-entity-picker uses .value; fallback picker uses .value too.
-        picker.value = entity;
+        pickerPrimary.value = entity;
       } catch {
         // ignore
       }
 
       // tt-entity-picker fires "value-changed" with detail.value
-      picker.addEventListener("value-changed", (ev) => {
+      pickerPrimary.addEventListener("value-changed", (ev) => {
         const v = ev?.detail?.value ?? ev?.target?.value;
         this._valueChanged({ entity: v || "" });
       });
+    }
+
+    const pickerTomorrow = this.shadowRoot.querySelector(".picker-tomorrow");
+    if (pickerTomorrow) {
+      try {
+        pickerTomorrow.addEventListener(
+          "picker-opened",
+          () => {
+            this._pickerOpen = true;
+          },
+          { passive: true }
+        );
+        pickerTomorrow.addEventListener(
+          "picker-closed",
+          () => {
+            setTimeout(() => {
+              this._pickerOpen = false;
+              this._applyHassToPickers();
+            }, 200);
+          },
+          { passive: true }
+        );
+      } catch {
+        // ignore
+      }
+
+      try {
+        pickerTomorrow.hass = hass;
+      } catch {
+        // ignore
+      }
+
+      try {
+        pickerTomorrow.value = tomorrowEntity;
+      } catch {
+        // ignore
+      }
+
+      pickerTomorrow.addEventListener("value-changed", (ev) => {
+        const v = ev?.detail?.value ?? ev?.target?.value;
+        this._valueChanged({ tomorrow_entity: v || "" });
+      });
+    }
+
+    const useTomorrowEl = this.shadowRoot.querySelector("input.use-tomorrow");
+    if (useTomorrowEl) {
+      useTomorrowEl.onchange = (e) => {
+        this._valueChanged({ use_tomorrow_entity: !!e.target.checked });
+        this._render();
+      };
     }
 
     const syncEl = this.shadowRoot.querySelector("input.sync");
