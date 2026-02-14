@@ -43,6 +43,11 @@ const EGS_I18N = {
     'editor.language': 'Language',
     'editor.language_auto': 'Auto (Home Assistant)',
     'editor.title_optional': 'Title (optional)',
+    'editor.view_optional': 'View (optional)',
+    'editor.view_label': 'What to show',
+    'editor.view_show_all': 'Show all',
+    'editor.view_graph_minmax': 'Show graph + min/max',
+    'editor.view_graph_only': 'Show graph only',
     'editor.entity_label': 'Electricity price entity',
     'editor.entity_picker': 'Select entity',
 
@@ -50,6 +55,12 @@ const EGS_I18N = {
     'editor.tomorrow_desc': 'Enable if your setup splits today and tomorrow prices into separate sensors.',
     'editor.tomorrow_entity_label': 'Electricity price entity (tomorrow)',
     'editor.tomorrow_entity_picker': 'Select entity',
+    'editor.sell_toggle': 'Use sell price sensor',
+    'editor.sell_desc': 'Enable to show sell prices next to buy prices for each hour.',
+    'editor.sell_entity_label': 'Sell price entity',
+    'editor.sell_entity_picker': 'Select entity',
+    'label.buy': 'Buy',
+    'label.sell': 'Sell',
     'editor.sync_optional': 'Sync (optional)',
     'editor.sync_title': 'Share “cheapest times” between users',
     'editor.sync_desc': 'Store in Home Assistant (.storage) via integration',
@@ -88,6 +99,11 @@ const EGS_I18N = {
     'editor.language': 'Sprog',
     'editor.language_auto': 'Auto (Home Assistant)',
     'editor.title_optional': 'Titel (valgfri)',
+    'editor.view_optional': 'Visning (valgfri)',
+    'editor.view_label': 'Hvad skal vises',
+    'editor.view_show_all': 'Vis alt',
+    'editor.view_graph_minmax': 'Vis graf + min/maks',
+    'editor.view_graph_only': 'Vis kun graf',
     'editor.entity_label': 'Strømpris entity',
     'editor.entity_picker': 'Vælg entity',
 
@@ -95,6 +111,12 @@ const EGS_I18N = {
     'editor.tomorrow_desc': 'Slå til hvis dine priser er delt op i dag og i morgen.',
     'editor.tomorrow_entity_label': 'Strømpris entity (i morgen)',
     'editor.tomorrow_entity_picker': 'Vælg entity',
+    'editor.sell_toggle': 'Brug salgspris-sensor',
+    'editor.sell_desc': 'Slå til for at vise salgspriser ved siden af købspriser for hver time.',
+    'editor.sell_entity_label': 'Salgspris entity',
+    'editor.sell_entity_picker': 'Vælg entity',
+    'label.buy': 'Køb',
+    'label.sell': 'Salg',
     'editor.sync_optional': 'Sync (valgfri)',
     'editor.sync_title': 'Del "billigste tider" mellem brugere',
     'editor.sync_desc': 'Gem i Home Assistant (.storage) via integration',
@@ -133,8 +155,19 @@ const EGS_I18N = {
     'editor.language': 'Språk',
     'editor.language_auto': 'Auto (Home Assistant)',
     'editor.title_optional': 'Titel (valfritt)',
+    'editor.view_optional': 'Visning (valfritt)',
+    'editor.view_label': 'Vad ska visas',
+    'editor.view_show_all': 'Visa allt',
+    'editor.view_graph_minmax': 'Visa graf + min/max',
+    'editor.view_graph_only': 'Visa endast graf',
     'editor.entity_label': 'Elpris-entitet',
     'editor.entity_picker': 'Välj entitet',
+    'editor.sell_toggle': 'Använd säljsensor för pris',
+    'editor.sell_desc': 'Aktivera för att visa säljpriser bredvid köppriser för varje timme.',
+    'editor.sell_entity_label': 'Säljpris-entitet',
+    'editor.sell_entity_picker': 'Välj entitet',
+    'label.buy': 'Köp',
+    'label.sell': 'Sälj',
     'editor.sync_optional': 'Synk (valfritt)',
     'editor.sync_title': 'Dela “billigaste tider” mellan användare',
     'editor.sync_desc': 'Spara i Home Assistant (.storage) via integration',
@@ -173,8 +206,19 @@ const EGS_I18N = {
     'editor.language': 'Språk',
     'editor.language_auto': 'Auto (Home Assistant)',
     'editor.title_optional': 'Tittel (valgfritt)',
+    'editor.view_optional': 'Visning (valgfri)',
+    'editor.view_label': 'Hva skal vises',
+    'editor.view_show_all': 'Vis alt',
+    'editor.view_graph_minmax': 'Vis graf + min/maks',
+    'editor.view_graph_only': 'Vis kun graf',
     'editor.entity_label': 'Strømpris-entitet',
     'editor.entity_picker': 'Velg entitet',
+    'editor.sell_toggle': 'Bruk salgsprissensor',
+    'editor.sell_desc': 'Aktiver for å vise salgspriser ved siden av kjøpspriser for hver time.',
+    'editor.sell_entity_label': 'Salgspris-entitet',
+    'editor.sell_entity_picker': 'Velg entitet',
+    'label.buy': 'Kjøp',
+    'label.sell': 'Salg',
     'editor.sync_optional': 'Synk (valgfritt)',
     'editor.sync_title': 'Del “billigste tider” mellom brukere',
     'editor.sync_desc': 'Lagre i Home Assistant (.storage) via integrasjon',
@@ -213,8 +257,19 @@ const EGS_I18N = {
     'editor.language': 'Sprache',
     'editor.language_auto': 'Auto (Home Assistant)',
     'editor.title_optional': 'Titel (optional)',
+    'editor.view_optional': 'Ansicht (optional)',
+    'editor.view_label': 'Was anzeigen',
+    'editor.view_show_all': 'Alles anzeigen',
+    'editor.view_graph_minmax': 'Grafik + Min/Max anzeigen',
+    'editor.view_graph_only': 'Nur Grafik anzeigen',
     'editor.entity_label': 'Strompreis-Entität',
     'editor.entity_picker': 'Entität auswählen',
+    'editor.sell_toggle': 'Verkaufspreis-Sensor verwenden',
+    'editor.sell_desc': 'Aktivieren, um Verkaufspreise neben Kaufpreisen pro Stunde anzuzeigen.',
+    'editor.sell_entity_label': 'Verkaufspreis-Entität',
+    'editor.sell_entity_picker': 'Entität auswählen',
+    'label.buy': 'Kauf',
+    'label.sell': 'Verkauf',
     'editor.sync_optional': 'Synchronisierung (optional)',
     'editor.sync_title': '„Günstigste Zeiten“ zwischen Benutzern teilen',
     'editor.sync_desc': 'In Home Assistant (.storage) über Integration speichern',
@@ -253,8 +308,19 @@ const EGS_I18N = {
     'editor.language': 'Idioma',
     'editor.language_auto': 'Auto (Home Assistant)',
     'editor.title_optional': 'Título (opcional)',
+    'editor.view_optional': 'Vista (opcional)',
+    'editor.view_label': 'Qué mostrar',
+    'editor.view_show_all': 'Mostrar todo',
+    'editor.view_graph_minmax': 'Mostrar gráfico + mín/máx',
+    'editor.view_graph_only': 'Mostrar solo gráfico',
     'editor.entity_label': 'Entidad de precio de electricidad',
     'editor.entity_picker': 'Seleccionar entidad',
+    'editor.sell_toggle': 'Usar sensor de precio de venta',
+    'editor.sell_desc': 'Activa para mostrar precios de venta junto a precios de compra para cada hora.',
+    'editor.sell_entity_label': 'Entidad de precio de venta',
+    'editor.sell_entity_picker': 'Seleccionar entidad',
+    'label.buy': 'Compra',
+    'label.sell': 'Venta',
     'editor.sync_optional': 'Sincronización (opcional)',
     'editor.sync_title': 'Compartir “horarios más baratos” entre usuarios',
     'editor.sync_desc': 'Guardar en Home Assistant (.storage) mediante la integración',
@@ -293,8 +359,19 @@ const EGS_I18N = {
     'editor.language': 'Langue',
     'editor.language_auto': 'Auto (Home Assistant)',
     'editor.title_optional': 'Titre (optionnel)',
+    'editor.view_optional': 'Affichage (optionnel)',
+    'editor.view_label': 'Que montrer',
+    'editor.view_show_all': 'Tout afficher',
+    'editor.view_graph_minmax': 'Afficher graphique + min/max',
+    'editor.view_graph_only': 'Afficher uniquement le graphique',
     'editor.entity_label': 'Entité de prix de l’électricité',
     'editor.entity_picker': 'Sélectionner une entité',
+    'editor.sell_toggle': 'Utiliser un capteur de prix de vente',
+    'editor.sell_desc': 'Activez pour afficher les prix de vente à côté des prix d’achat pour chaque heure.',
+    'editor.sell_entity_label': 'Entité de prix de vente',
+    'editor.sell_entity_picker': 'Sélectionner une entité',
+    'label.buy': 'Achat',
+    'label.sell': 'Vente',
     'editor.sync_optional': 'Synchronisation (optionnelle)',
     'editor.sync_title': 'Partager les “heures les moins chères” entre utilisateurs',
     'editor.sync_desc': 'Stocker dans Home Assistant (.storage) via l’intégration',
@@ -333,8 +410,19 @@ const EGS_I18N = {
     'editor.language': 'Lingua',
     'editor.language_auto': 'Auto (Home Assistant)',
     'editor.title_optional': 'Titolo (opzionale)',
+    'editor.view_optional': 'Vista (opzionale)',
+    'editor.view_label': 'Cosa mostrare',
+    'editor.view_show_all': 'Mostra tutto',
+    'editor.view_graph_minmax': 'Mostra grafico + min/max',
+    'editor.view_graph_only': 'Mostra solo grafico',
     'editor.entity_label': 'Entità prezzo elettricità',
     'editor.entity_picker': 'Seleziona entità',
+    'editor.sell_toggle': 'Usa sensore prezzo di vendita',
+    'editor.sell_desc': 'Abilita per mostrare i prezzi di vendita accanto ai prezzi di acquisto per ogni ora.',
+    'editor.sell_entity_label': 'Entità prezzo di vendita',
+    'editor.sell_entity_picker': 'Seleziona entità',
+    'label.buy': 'Acquisto',
+    'label.sell': 'Vendita',
     'editor.sync_optional': 'Sincronizzazione (opzionale)',
     'editor.sync_title': 'Condividi “orari più convenienti” tra utenti',
     'editor.sync_desc': 'Salva in Home Assistant (.storage) tramite integrazione',
@@ -373,8 +461,19 @@ const EGS_I18N = {
     'editor.language': 'Kieli',
     'editor.language_auto': 'Auto (Home Assistant)',
     'editor.title_optional': 'Otsikko (valinnainen)',
+    'editor.view_optional': 'Näkymä (valinnainen)',
+    'editor.view_label': 'Mitä näytetään',
+    'editor.view_show_all': 'Näytä kaikki',
+    'editor.view_graph_minmax': 'Näytä kaavio + min/maks',
+    'editor.view_graph_only': 'Näytä vain kaavio',
     'editor.entity_label': 'Sähkön hinta -entiteetti',
     'editor.entity_picker': 'Valitse entiteetti',
+    'editor.sell_toggle': 'Käytä myyntihinta-anturia',
+    'editor.sell_desc': 'Ota käyttöön, jotta myyntihinnat näkyvät ostohintojen vieressä jokaiselle tunnille.',
+    'editor.sell_entity_label': 'Myyntihinnan entiteetti',
+    'editor.sell_entity_picker': 'Valitse entiteetti',
+    'label.buy': 'Osto',
+    'label.sell': 'Myynti',
     'editor.sync_optional': 'Synkronointi (valinnainen)',
     'editor.sync_title': 'Jaa “halvimmat ajat” käyttäjien kesken',
     'editor.sync_desc': 'Tallenna Home Assistantiin (.storage) integraation kautta',
@@ -413,8 +512,19 @@ const EGS_I18N = {
     'editor.language': 'Jazyk',
     'editor.language_auto': 'Auto (Home Assistant)',
     'editor.title_optional': 'Název (volitelné)',
+    'editor.view_optional': 'Zobrazení (volitelné)',
+    'editor.view_label': 'Co zobrazit',
+    'editor.view_show_all': 'Zobrazit vše',
+    'editor.view_graph_minmax': 'Zobrazit graf + min/max',
+    'editor.view_graph_only': 'Zobrazit pouze graf',
     'editor.entity_label': 'Entita ceny elektřiny',
     'editor.entity_picker': 'Vybrat entitu',
+    'editor.sell_toggle': 'Použít senzor prodejní ceny',
+    'editor.sell_desc': 'Povolte pro zobrazení prodejních cen vedle nákupních cen pro každou hodinu.',
+    'editor.sell_entity_label': 'Entita prodejní ceny',
+    'editor.sell_entity_picker': 'Vybrat entitu',
+    'label.buy': 'Nákup',
+    'label.sell': 'Prodej',
     'editor.sync_optional': 'Synchronizace (volitelné)',
     'editor.sync_title': 'Sdílet „nejlevnější časy“ mezi uživateli',
     'editor.sync_desc': 'Uložit do Home Assistant (.storage) přes integraci',
@@ -453,8 +563,19 @@ const EGS_I18N = {
     'editor.language': 'Jezik',
     'editor.language_auto': 'Samodejno (Home Assistant)',
     'editor.title_optional': 'Naslov (neobvezno)',
+    'editor.view_optional': 'Prikaz (neobvezno)',
+    'editor.view_label': 'Kaj prikazati',
+    'editor.view_show_all': 'Prikaži vse',
+    'editor.view_graph_minmax': 'Prikaži graf + min/max',
+    'editor.view_graph_only': 'Prikaži samo graf',
     'editor.entity_label': 'Entiteta cene elektrike',
     'editor.entity_picker': 'Izberi entiteto',
+    'editor.sell_toggle': 'Uporabi senzor prodajne cene',
+    'editor.sell_desc': 'Omogoči prikaz prodajnih cen poleg nakupnih cen za vsako uro.',
+    'editor.sell_entity_label': 'Entiteta prodajne cene',
+    'editor.sell_entity_picker': 'Izberi entiteto',
+    'label.buy': 'Nakup',
+    'label.sell': 'Prodaja',
     'editor.sync_optional': 'Sinhronizacija (neobvezno)',
     'editor.sync_title': 'Deli “najcenejše čase” med uporabniki',
     'editor.sync_desc': 'Shrani v Home Assistant (.storage) prek integracije',
@@ -750,7 +871,7 @@ function egsExtractSeries(stateObj, mode) {
     }
 
     if (item && typeof item === "object") {
-      let rawVal = egsGet(item, ["value", "price", "val", "v", "amount", "y"]);
+      let rawVal = egsGet(item, ["value", "price", "val", "v", "price_per_kwh", "total", "amount", "y"]);
       if (typeof rawVal === "string") rawVal = rawVal.replace(",", ".");
       const value = egsAsNumber(rawVal);
       if (value == null) continue;
@@ -1154,11 +1275,13 @@ function egsSaveSettings(entityId, settings) {
   }
 }
 
-function egsComputeBars(points, w, h, pad) {
+function egsComputeBars(points, w, h, pad, extraValues) {
   const innerW = Math.max(1, w - pad.left - pad.right);
   const innerH = Math.max(1, h - pad.top - pad.bottom);
 
-  const values = points.map((p) => p.value).filter((v) => Number.isFinite(v));
+  const primaryValues = points.map((p) => p.value).filter((v) => Number.isFinite(v));
+  const secondaryValues = Array.isArray(extraValues) ? extraValues.filter((v) => Number.isFinite(v)) : [];
+  const values = [...primaryValues, ...secondaryValues];
   if (!values.length) return null;
 
   let min = Math.min(...values);
@@ -1314,6 +1437,9 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       entity: "",
       use_tomorrow_entity: false,
       tomorrow_entity: "",
+      use_sell_entity: false,
+      sell_entity: "",
+      display_mode: "all", // all | graph_minmax | graph_only
       sync: false,
       language: "", // "" = auto (Home Assistant)
     };
@@ -1325,6 +1451,8 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     const prevEntity = this._config?.entity || "";
     const prevUseTomorrow = !!this._config?.use_tomorrow_entity;
     const prevTomorrowEntity = this._config?.tomorrow_entity || "";
+    const prevUseSell = !!this._config?.use_sell_entity;
+    const prevSellEntity = this._config?.sell_entity || "";
     const prevSync = !!this._config?.sync;
     this._config = {
       ...stub,
@@ -1334,6 +1462,11 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       entity: config.entity || "",
       use_tomorrow_entity: !!config.use_tomorrow_entity,
       tomorrow_entity: config.tomorrow_entity || "",
+      use_sell_entity: !!config.use_sell_entity,
+      sell_entity: config.sell_entity || "",
+      display_mode: ['all', 'graph_minmax', 'graph_only'].includes(config.display_mode)
+        ? config.display_mode
+        : stub.display_mode,
       sync: !!config.sync,
       language: typeof config.language === 'string' ? config.language : stub.language,
       // Never lose type
@@ -1344,12 +1477,16 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     const nextEntity = this._config?.entity || "";
     const nextUseTomorrow = !!this._config?.use_tomorrow_entity;
     const nextTomorrowEntity = this._config?.tomorrow_entity || "";
+    const nextUseSell = !!this._config?.use_sell_entity;
+    const nextSellEntity = this._config?.sell_entity || "";
     const nextSync = !!this._config?.sync;
     if (
       prevEntity !== nextEntity ||
       prevSync !== nextSync ||
       prevUseTomorrow !== nextUseTomorrow ||
-      prevTomorrowEntity !== nextTomorrowEntity
+      prevTomorrowEntity !== nextTomorrowEntity ||
+      prevUseSell !== nextUseSell ||
+      prevSellEntity !== nextSellEntity
     ) {
       this._lastEntityId = "";
       this._lastEntityRenderKey = null;
@@ -1393,7 +1530,9 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     // Re-render around interval boundaries so "now" moves and we keep the view aligned.
     const useTomorrow = !!this._config?.use_tomorrow_entity;
     const tEnt = useTomorrow ? egsSafeText(this._config?.tomorrow_entity || '') : '';
-    const key = `${egsSafeText(this._config?.entity || '')}|${tEnt}|boundary|${this._intervalMinutes === 15 ? 15 : 60}`;
+    const useSell = !!this._config?.use_sell_entity;
+    const sEnt = useSell ? egsSafeText(this._config?.sell_entity || '') : '';
+    const key = `${egsSafeText(this._config?.entity || '')}|${tEnt}|${sEnt}|boundary|${this._intervalMinutes === 15 ? 15 : 60}`;
     if (this._nowFollowKey === key && this._nowFollowTimer) return;
 
     this._stopNowFollowTimer();
@@ -1726,7 +1865,9 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       const primaryEntityId = egsSafeText(this._config?.entity || "");
       const useTomorrow = !!this._config?.use_tomorrow_entity;
       const tomorrowEntityId = useTomorrow ? egsSafeText(this._config?.tomorrow_entity || "") : "";
-      const entityKey = `${primaryEntityId}||${tomorrowEntityId}`;
+      const useSell = !!this._config?.use_sell_entity;
+      const sellEntityId = useSell ? egsSafeText(this._config?.sell_entity || "") : "";
+      const entityKey = `${primaryEntityId}||${tomorrowEntityId}||${sellEntityId}`;
 
       if (!primaryEntityId) {
         this._render();
@@ -1735,6 +1876,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
 
       const st = hass?.states?.[primaryEntityId] || null;
       const stTomorrow = tomorrowEntityId ? hass?.states?.[tomorrowEntityId] || null : null;
+      const stSell = sellEntityId ? hass?.states?.[sellEntityId] || null : null;
 
       const keyToday = st
         ? `${egsSafeText(st.state)}|${egsSafeText(st.last_updated)}|${egsSafeText(st.last_changed)}`
@@ -1746,7 +1888,12 @@ class EnergyGraphSchedulerCard extends HTMLElement {
               )}`
             : "__missing__")
         : "__none__";
-      const key = `${keyToday}||${keyTomorrow}`;
+      const keySell = sellEntityId
+        ? (stSell
+            ? `${egsSafeText(stSell.state)}|${egsSafeText(stSell.last_updated)}|${egsSafeText(stSell.last_changed)}`
+            : "__missing__")
+        : "__none__";
+      const key = `${keyToday}||${keyTomorrow}||${keySell}`;
 
       if (this._lastEntityId !== entityKey) {
         this._lastEntityId = entityKey;
@@ -1819,6 +1966,24 @@ class EnergyGraphSchedulerCard extends HTMLElement {
   _render() {
     if (!this.shadowRoot) return;
 
+    // Preserve external style hooks (e.g. card-mod/theme attrs) across re-renders.
+    // Frequent re-renders recreate <ha-card>; without this, some themes can briefly
+    // revert to default opaque background.
+    const preservedHaCardAttrs = [];
+    try {
+      const prevCard = this.shadowRoot.querySelector("ha-card");
+      if (prevCard?.attributes?.length) {
+        for (const attr of Array.from(prevCard.attributes)) {
+          const name = egsSafeText(attr?.name || "").toLowerCase();
+          if (name === "style" || name === "class" || name.includes("card-mod")) {
+            preservedHaCardAttrs.push({ name: attr.name, value: attr.value });
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+
     // Preserve horizontal scroll position across frequent re-renders.
     try {
       const prevGraph = this.shadowRoot.querySelector(".graph");
@@ -1834,6 +1999,12 @@ class EnergyGraphSchedulerCard extends HTMLElement {
 
     const hass = this._hass;
     const config = this._config || { title: "Energy Graph Scheduler", entity: "" };
+    const displayMode = ['all', 'graph_minmax', 'graph_only'].includes(config.display_mode)
+      ? config.display_mode
+      : 'all';
+    const showStats = displayMode === 'all' || displayMode === 'graph_minmax';
+    const showNowStat = displayMode === 'all';
+    const showSections = displayMode === 'all';
 
     const lang = egsGetUiLang(config, hass);
     const t = (key, vars) => egsFormatTemplate(egsLocalize(key, config.language || hass), vars);
@@ -1849,8 +2020,11 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     const entityId = egsSafeText(config.entity);
     const useTomorrowEntity = !!config.use_tomorrow_entity;
     const tomorrowEntityId = useTomorrowEntity ? egsSafeText(config.tomorrow_entity) : "";
+    const useSellEntity = !!config.use_sell_entity;
+    const sellEntityId = useSellEntity ? egsSafeText(config.sell_entity) : "";
     const stateObj = entityId ? hass?.states?.[entityId] : null;
     const tomorrowStateObj = tomorrowEntityId ? hass?.states?.[tomorrowEntityId] : null;
+    const sellStateObj = sellEntityId ? hass?.states?.[sellEntityId] : null;
 
     const rawTitle = egsSafeText(config.title || "");
     const titleDefaultCandidates = (() => {
@@ -1870,6 +2044,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       : rawTitle;
 
     const unit = stateObj?.attributes?.unit_of_measurement || "";
+    const sellUnit = sellStateObj?.attributes?.unit_of_measurement || unit;
 
     // Scrollable chart: width is derived from how many hours we can show.
     const height = 160; // SVG coordinate height
@@ -1884,6 +2059,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       bodyHtml = `<div class="hint">${egsSafeText(t('hint.entity_not_found'))}: <span class="mono">${entityId}</span></div>`;
     } else {
       let points = [];
+      let sellPoints = [];
       if (useTomorrowEntity && tomorrowEntityId) {
         const todayPoints = egsExtractSeries(stateObj, 'today')?.points || [];
         const tomPoints = tomorrowStateObj ? egsExtractSeries(tomorrowStateObj, 'tomorrow')?.points || [] : [];
@@ -1892,12 +2068,34 @@ class EnergyGraphSchedulerCard extends HTMLElement {
         points = egsExtractSeries(stateObj)?.points || [];
       }
 
+      if (useSellEntity && sellEntityId && sellStateObj) {
+        sellPoints = egsExtractSeries(sellStateObj)?.points || [];
+      }
+
       if (!points.length) {
         bodyHtml = `<div class="hint">${egsSafeText(t('hint.no_price_data'))}: <span class="mono">${entityId}</span></div>`;
       } else {
         const nowTs = Date.now();
         const intervalM = this._intervalMinutes === 15 ? 15 : 60;
         const timeline = egsBuildTimeline(points, nowTs, intervalM);
+        const sellTimeline = sellPoints.length ? egsBuildTimeline(sellPoints, nowTs, intervalM) : [];
+        const sellHasTs = sellTimeline.some((p) => p && p.ts != null);
+        const sellByTs = new Map();
+        if (sellHasTs) {
+          for (const p of sellTimeline) {
+            if (!p || p.ts == null || !Number.isFinite(p.value)) continue;
+            sellByTs.set(egsStartOfLocalInterval(p.ts, intervalM), p.value);
+          }
+        }
+        const sellValues = timeline.map((p, i) => {
+          if (sellHasTs && p?.ts != null) {
+            const v = sellByTs.get(egsStartOfLocalInterval(p.ts, intervalM));
+            return Number.isFinite(v) ? v : null;
+          }
+          const v = sellTimeline?.[i]?.value;
+          return Number.isFinite(v) ? v : null;
+        });
+        const hasSellOverlay = !!(useSellEntity && sellEntityId && sellValues.some((v) => Number.isFinite(v)));
         const hourValues = timeline.map((p) => (Number.isFinite(p.value) ? p.value : null));
 
         // Only consider hours from "now" and forward when suggesting cheapest times.
@@ -1924,7 +2122,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
         // in HA's card/layout wrappers.
         const availableW = hostW > 0 ? Math.max(0, Math.floor(hostW - 24) - 6) : 0; // .wrap has 12px left/right padding
         const width = Math.max(minWidth, availableW);
-        const bars = egsComputeBars(timeline, width, height, pad);
+        const bars = egsComputeBars(timeline, width, height, pad, hasSellOverlay ? sellValues : null);
         if (!bars) {
           bodyHtml = `<div class="hint">${egsSafeText(t('hint.cannot_build_graph'))}</div>`;
         } else {
@@ -2054,36 +2252,75 @@ class EnergyGraphSchedulerCard extends HTMLElement {
             `;
           })();
 
+          const innerH = Math.max(1, height - pad.top - pad.bottom);
+          const scaleRange = Math.max(0.0000001, bars.max - bars.min);
+          const toYByScale = (v) => pad.top + (1 - (v - bars.min) / scaleRange) * innerH;
+          const buyLabel = egsSafeText(t('label.buy'));
+          const sellLabel = egsSafeText(t('label.sell'));
+
           const rects = bars.pts
             .map((p, i) => {
               const isNow = nowIndex != null && i === nowIndex;
-              const tier = egsTierClass(p.value, tiers);
               const inSel =
                 selectedWindow &&
                 Number.isFinite(selectedWindow.start) &&
                 Number.isFinite(selectedWindow.steps) &&
                 i >= selectedWindow.start &&
                 i < selectedWindow.start + selectedWindow.steps;
-              const cls = `bar ${tier}${isNow ? " bar-now" : ""}${inSel ? " bar-mark" : ""}`;
-              const r = Math.min(6, Math.max(0, p.w / 2 - 1), Math.max(0, p.h / 2));
-              const valTxt = Number.isFinite(p.value) ? p.value.toFixed(3) : "";
+
+              const splitGap = hasSellOverlay ? 2 : 0;
+              const buyW = hasSellOverlay ? Math.max(1, (p.w - splitGap) / 2) : p.w;
+              const sellW = hasSellOverlay ? buyW : 0;
+              const buyX = p.x;
+              const sellX = hasSellOverlay ? p.x + p.w - sellW : p.x;
+
+              const tier = egsTierClass(p.value, tiers);
+              const buyCls = `bar ${tier}${isNow ? " bar-now" : ""}${inSel ? " bar-mark" : ""}`;
+              const buyR = Math.min(6, Math.max(0, buyW / 2 - 1), Math.max(0, p.h / 2));
+              const buyValTxt = Number.isFinite(p.value) ? p.value.toFixed(3) : "";
               const tsAttr = p.ts != null ? ` data-ts="${Number(p.ts)}"` : "";
-              return `<rect x="${p.x.toFixed(2)}" y="${p.y.toFixed(2)}" width="${p.w.toFixed(2)}" height="${p.h.toFixed(
+
+              const buyRect = `<rect x="${buyX.toFixed(2)}" y="${p.y.toFixed(2)}" width="${buyW.toFixed(2)}" height="${p.h.toFixed(
                 2
-              )}" rx="${r.toFixed(2)}" ry="${r.toFixed(2)}" class="${cls}" data-idx="${i}" data-val="${valTxt}"${tsAttr} />`;
+              )}" rx="${buyR.toFixed(2)}" ry="${buyR.toFixed(2)}" class="${buyCls}" data-idx="${i}" data-series="buy" data-series-label="${egsSafeText(
+                buyLabel
+              )}" data-unit="${egsSafeText(unit)}" data-val="${buyValTxt}"${tsAttr} />`;
+
+              if (!hasSellOverlay) return buyRect;
+
+              const sellVal = sellValues[i];
+              const sellYVal = toYByScale(sellVal ?? 0);
+              const sellTop = Math.min(sellYVal, bars.baselineY);
+              const sellBottom = Math.max(sellYVal, bars.baselineY);
+              const sellH = sellVal == null ? 0 : Math.max(0, sellBottom - sellTop);
+              const sellR = Math.min(6, Math.max(0, sellW / 2 - 1), Math.max(0, sellH / 2));
+              const sellValTxt = Number.isFinite(sellVal) ? sellVal.toFixed(3) : "";
+              const sellCls = `bar bar-sell${isNow ? " bar-now" : ""}${inSel ? " bar-mark" : ""}${
+                sellVal == null ? " bar-missing" : ""
+              }`;
+              const sellRect = `<rect x="${sellX.toFixed(2)}" y="${sellTop.toFixed(2)}" width="${sellW.toFixed(
+                2
+              )}" height="${sellH.toFixed(2)}" rx="${sellR.toFixed(2)}" ry="${sellR.toFixed(
+                2
+              )}" class="${sellCls}" data-idx="${i}" data-series="sell" data-series-label="${egsSafeText(
+                sellLabel
+              )}" data-unit="${egsSafeText(sellUnit)}" data-val="${sellValTxt}"${tsAttr} />`;
+              return buyRect + sellRect;
             })
             .join("");
 
           const nowXAttr = nowPoint ? `${Number(nowPoint.xCenter).toFixed(2)}` : "";
 
           bodyHtml = `
+            ${showStats ? `
             <div class="meta">
               <div class="stats">
                 <span>${egsSafeText(t('stats.min'))}: <b>${minTxt}</b> ${egsSafeText(unit)}</span>
-                <span>${egsSafeText(t('stats.now'))}: <b>${nowTxt}</b> ${egsSafeText(unit)}</span>
+                ${showNowStat ? `<span>${egsSafeText(t('stats.now'))}: <b>${nowTxt}</b> ${egsSafeText(unit)}</span>` : ''}
                 <span>${egsSafeText(t('stats.max'))}: <b>${maxTxt}</b> ${egsSafeText(unit)}</span>
               </div>
             </div>
+            ` : ''}
             <div class="graph">
               <div class="tooltip" hidden></div>
               <svg data-now-x="${nowXAttr}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="Price graph" style="width:${width}px; height:160px;">
@@ -2100,6 +2337,10 @@ class EnergyGraphSchedulerCard extends HTMLElement {
                     <stop offset="0%" stop-color="var(--error-color)" stop-opacity="0.85" />
                     <stop offset="100%" stop-color="var(--error-color)" stop-opacity="0.25" />
                   </linearGradient>
+                  <linearGradient id="egsFillSell" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="var(--primary-color)" stop-opacity="0.92" />
+                    <stop offset="100%" stop-color="var(--primary-color)" stop-opacity="0.32" />
+                  </linearGradient>
                 </defs>
                 ${dayLabels}
                 ${hourLabels}
@@ -2110,7 +2351,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
                 ${nowMarker}
               </svg>
             </div>
-            ${(() => {
+            ${showSections ? (() => {
               const secs = Array.isArray(this._sections) ? this._sections : [];
               if (!secs.length) return "";
               const items = secs
@@ -2133,7 +2374,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
                 })
                 .join("");
               return `<div class="sections"><div class="sec-title">${egsSafeText(t('sections.title'))}</div><div class="sec-grid">${items}</div></div>`;
-            })()}
+            })() : ''}
           `;
         }
       }
@@ -2197,6 +2438,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       .bar-low{ fill: url(#egsFillLow); }
       .bar-mid{ fill: url(#egsFillMid); }
       .bar-high{ fill: url(#egsFillHigh); }
+      .bar-sell{ fill: url(#egsFillSell); }
       .bar-now{ opacity: 1; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25)); }
       .bar-missing{ opacity: 0; pointer-events:none; }
       .xlab{ fill: var(--secondary-text-color); font-size: 11px; opacity: 0.8; user-select:none; }
@@ -2210,6 +2452,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
 
       .tooltip{ position:absolute; z-index: 5; pointer-events:none; background: color-mix(in oklab, var(--card-background-color) 88%, black); border: 1px solid var(--divider-color); border-radius: 10px; padding: 8px 10px; box-shadow: 0 10px 22px rgba(0,0,0,0.35); }
       .tooltip .t-time{ color: var(--secondary-text-color); font-size: 11px; line-height: 1.1; margin-bottom: 4px; }
+      .tooltip .t-series{ color: var(--secondary-text-color); font-size: 11px; font-weight: 700; margin-right: 6px; }
       .tooltip .t-val{ color: var(--primary-text-color); font-weight: 700; font-size: 13px; line-height: 1.2; white-space: nowrap; }
       .tooltip .t-unit{ color: var(--secondary-text-color); font-weight: 600; margin-left: 4px; }
 
@@ -2311,6 +2554,23 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       ${modalHtml}
     `;
 
+    // Re-apply preserved attrs after DOM replacement.
+    try {
+      const nextCard = this.shadowRoot.querySelector("ha-card");
+      if (nextCard && preservedHaCardAttrs.length) {
+        for (const attr of preservedHaCardAttrs) {
+          if (!attr?.name) continue;
+          if (attr.value == null || attr.value === "") {
+            nextCard.setAttribute(attr.name, "");
+          } else {
+            nextCard.setAttribute(attr.name, attr.value);
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+
     // Restore scroll position and keep tracking it.
     try {
       const graph = this.shadowRoot.querySelector(".graph");
@@ -2374,18 +2634,20 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       const svg = graph?.querySelector("svg");
       const tip = graph?.querySelector(".tooltip");
       if (graph && svg && tip) {
-        const setTip = (clientX, clientY, idx, valStr, tsStr) => {
+        const setTip = (clientX, clientY, idx, valStr, tsStr, seriesLabel, valueUnit) => {
           const i = Math.max(0, Number(idx) || 0);
           const hasVal = !!valStr;
           const ts = tsStr != null && tsStr !== "" ? Number(tsStr) : null;
+          const seriesTxt = egsSafeText(seriesLabel || "");
+          const unitTxt = egsSafeText(valueUnit || unit);
           const time =
             Number.isFinite(ts) && ts != null
               ? egsFormatRangeByTs(ts, 1, Date.now(), lang)
               : egsFormatHourRange(i % 24, 1);
           tip.innerHTML = hasVal
-            ? `<div class="t-time">${egsSafeText(time)}</div><div class="t-val">${egsSafeText(
-                valStr
-              )}<span class="t-unit">${egsSafeText(unit)}</span></div>`
+            ? `<div class="t-time">${egsSafeText(time)}</div><div class="t-val">${
+                seriesTxt ? `<span class="t-series">${seriesTxt}</span>` : ""
+              }${egsSafeText(valStr)}<span class="t-unit">${unitTxt}</span></div>`
             : `<div class="t-time">${egsSafeText(time)}</div><div class="t-val muted">${egsSafeText(t('label.no_data'))}</div>`;
 
           const r = graph.getBoundingClientRect();
@@ -2419,13 +2681,17 @@ class EnergyGraphSchedulerCard extends HTMLElement {
             const idx = bar.getAttribute("data-idx");
             const valStr = bar.getAttribute("data-val") || "";
             const tsStr = bar.getAttribute("data-ts") || "";
-            setTip(ev.clientX, ev.clientY, idx, valStr, tsStr);
+            const seriesLabel = bar.getAttribute("data-series-label") || "";
+            const valueUnit = bar.getAttribute("data-unit") || unit;
+            setTip(ev.clientX, ev.clientY, idx, valStr, tsStr, seriesLabel, valueUnit);
           };
           bar.onpointermove = (ev) => {
             const idx = bar.getAttribute("data-idx");
             const valStr = bar.getAttribute("data-val") || "";
             const tsStr = bar.getAttribute("data-ts") || "";
-            setTip(ev.clientX, ev.clientY, idx, valStr, tsStr);
+            const seriesLabel = bar.getAttribute("data-series-label") || "";
+            const valueUnit = bar.getAttribute("data-unit") || unit;
+            setTip(ev.clientX, ev.clientY, idx, valStr, tsStr, seriesLabel, valueUnit);
           };
           bar.onpointerleave = hideTip;
           bar.onpointerdown = hideTip;
@@ -2559,6 +2825,11 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
       entity: (config && config.entity) || "",
       use_tomorrow_entity: !!(config && config.use_tomorrow_entity),
       tomorrow_entity: (config && config.tomorrow_entity) || "",
+      use_sell_entity: !!(config && config.use_sell_entity),
+      sell_entity: (config && config.sell_entity) || "",
+      display_mode: ['all', 'graph_minmax', 'graph_only'].includes(config && config.display_mode)
+        ? config.display_mode
+        : stub.display_mode,
       sync: !!(config && config.sync),
       language: typeof (config && config.language) === 'string' ? config.language : stub.language,
     };
@@ -2594,7 +2865,9 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
 
   _applyHassToPickers() {
     if (!this.shadowRoot) return;
-    const pickers = this.shadowRoot.querySelectorAll("tt-entity-picker.picker-primary, tt-entity-picker.picker-tomorrow");
+    const pickers = this.shadowRoot.querySelectorAll(
+      "tt-entity-picker.picker-primary, tt-entity-picker.picker-tomorrow, tt-entity-picker.picker-sell"
+    );
     if (!pickers || !pickers.length) return;
     for (const picker of pickers) {
       try {
@@ -2611,6 +2884,11 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
     const entity = egsSafeText(this._config?.entity ?? "");
     const useTomorrowEntity = !!this._config?.use_tomorrow_entity;
     const tomorrowEntity = egsSafeText(this._config?.tomorrow_entity ?? "");
+    const useSellEntity = !!this._config?.use_sell_entity;
+    const sellEntity = egsSafeText(this._config?.sell_entity ?? "");
+    const displayMode = ['all', 'graph_minmax', 'graph_only'].includes(this._config?.display_mode)
+      ? this._config.display_mode
+      : 'all';
     const sync = !!this._config?.sync;
     const language = egsSafeText(this._config?.language ?? "");
 
@@ -2630,7 +2908,7 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
     if (useTomorrowEl && useTomorrowEl.checked !== useTomorrowEntity) useTomorrowEl.checked = useTomorrowEntity;
 
     // Keep UI disabled-state in sync even when we don't re-render (editor reopen flow).
-    const tomorrowSub = this.shadowRoot.querySelector(".sub");
+    const tomorrowSub = this.shadowRoot.querySelector(".sub-tomorrow");
     if (tomorrowSub && tomorrowSub.classList) {
       if (useTomorrowEntity) tomorrowSub.classList.remove("disabled");
       else tomorrowSub.classList.add("disabled");
@@ -2653,11 +2931,40 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
       }
     }
 
+    const useSellEl = this.shadowRoot.querySelector("input.use-sell");
+    if (useSellEl && useSellEl.checked !== useSellEntity) useSellEl.checked = useSellEntity;
+
+    const sellSub = this.shadowRoot.querySelector(".sub-sell");
+    if (sellSub && sellSub.classList) {
+      if (useSellEntity) sellSub.classList.remove("disabled");
+      else sellSub.classList.add("disabled");
+    }
+
+    const pickerSell = this.shadowRoot.querySelector("tt-entity-picker.picker-sell");
+    if (pickerSell) {
+      try {
+        pickerSell.value = sellEntity;
+      } catch {
+        // ignore
+      }
+
+      try {
+        pickerSell.disabled = !useSellEntity;
+        if (useSellEntity) pickerSell.removeAttribute("disabled");
+        else pickerSell.setAttribute("disabled", "");
+      } catch {
+        // ignore
+      }
+    }
+
     const syncEl = this.shadowRoot.querySelector("input.sync");
     if (syncEl && syncEl.checked !== sync) syncEl.checked = sync;
 
     const langEl = this.shadowRoot.querySelector("select.language");
     if (langEl && langEl.value !== language) langEl.value = language;
+
+    const viewEl = this.shadowRoot.querySelector("select.view-mode");
+    if (viewEl && viewEl.value !== displayMode) viewEl.value = displayMode;
   }
 
   _render() {
@@ -2668,6 +2975,11 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
     const title = egsSafeText(this._config?.title ?? "");
     const useTomorrowEntity = !!this._config?.use_tomorrow_entity;
     const tomorrowEntity = egsSafeText(this._config?.tomorrow_entity ?? "");
+    const useSellEntity = !!this._config?.use_sell_entity;
+    const sellEntity = egsSafeText(this._config?.sell_entity ?? "");
+    const displayMode = ['all', 'graph_minmax', 'graph_only'].includes(this._config?.display_mode)
+      ? this._config.display_mode
+      : 'all';
     const sync = !!this._config?.sync;
     const language = egsSafeText(this._config?.language ?? "");
 
@@ -2720,6 +3032,7 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
       .row .t2{ color: var(--secondary-text-color); font-size: 12px; }
       input.sync{ width:18px; height:18px; margin:0; }
       input.use-tomorrow{ width:18px; height:18px; margin:0; }
+      input.use-sell{ width:18px; height:18px; margin:0; }
     `;
 
     this.shadowRoot.innerHTML = `
@@ -2732,6 +3045,21 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
         <div>
           <div class="label">${egsSafeText(t('editor.language'))}</div>
           <select class="language">${langOptions}</select>
+        </div>
+        <div>
+          <div class="label">${egsSafeText(t('editor.view_optional'))}</div>
+          <div class="box">
+            <div class="content">
+              <div>
+                <div class="label">${egsSafeText(t('editor.view_label'))}</div>
+                <select class="view-mode">
+                  <option value="all" ${displayMode === 'all' ? 'selected' : ''}>${egsSafeText(t('editor.view_show_all'))}</option>
+                  <option value="graph_minmax" ${displayMode === 'graph_minmax' ? 'selected' : ''}>${egsSafeText(t('editor.view_graph_minmax'))}</option>
+                  <option value="graph_only" ${displayMode === 'graph_only' ? 'selected' : ''}>${egsSafeText(t('editor.view_graph_only'))}</option>
+                </select>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="box">
           <div class="boxhdr">
@@ -2754,10 +3082,28 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
             <input class="use-tomorrow" type="checkbox" ${useTomorrowEntity ? "checked" : ""} />
           </div>
           <div class="content">
-            <div class="sub ${useTomorrowEntity ? '' : 'disabled'}">
+            <div class="sub sub-tomorrow ${useTomorrowEntity ? '' : 'disabled'}">
               <div class="label">${egsSafeText(t('editor.tomorrow_entity_label'))}</div>
               <tt-entity-picker class="picker-tomorrow" ${useTomorrowEntity ? '' : 'disabled'} label="${egsSafeText(
                 t('editor.tomorrow_entity_picker')
+              )}" include-domains='["sensor","binary_sensor"]'></tt-entity-picker>
+            </div>
+          </div>
+        </div>
+
+        <div class="box">
+          <div class="boxhdr">
+            <div class="txt">
+              <div class="t1">${egsSafeText(t('editor.sell_toggle'))}</div>
+              <div class="t2">${egsSafeText(t('editor.sell_desc'))}</div>
+            </div>
+            <input class="use-sell" type="checkbox" ${useSellEntity ? "checked" : ""} />
+          </div>
+          <div class="content">
+            <div class="sub sub-sell ${useSellEntity ? '' : 'disabled'}">
+              <div class="label">${egsSafeText(t('editor.sell_entity_label'))}</div>
+              <tt-entity-picker class="picker-sell" ${useSellEntity ? '' : 'disabled'} label="${egsSafeText(
+                t('editor.sell_entity_picker')
               )}" include-domains='["sensor","binary_sensor"]'></tt-entity-picker>
             </div>
           </div>
@@ -2812,6 +3158,15 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
 
         this._valueChanged(nextTitle != null ? { language: v, title: nextTitle } : { language: v });
         this._render();
+      };
+    }
+
+    const viewEl = this.shadowRoot.querySelector('select.view-mode');
+    if (viewEl) {
+      viewEl.onchange = (e) => {
+        const vRaw = egsSafeText(e?.target?.value || 'all');
+        const v = ['all', 'graph_minmax', 'graph_only'].includes(vRaw) ? vRaw : 'all';
+        this._valueChanged({ display_mode: v });
       };
     }
 
@@ -2902,10 +3257,60 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
       });
     }
 
+    const pickerSell = this.shadowRoot.querySelector(".picker-sell");
+    if (pickerSell) {
+      try {
+        pickerSell.addEventListener(
+          "picker-opened",
+          () => {
+            this._pickerOpen = true;
+          },
+          { passive: true }
+        );
+        pickerSell.addEventListener(
+          "picker-closed",
+          () => {
+            setTimeout(() => {
+              this._pickerOpen = false;
+              this._applyHassToPickers();
+            }, 200);
+          },
+          { passive: true }
+        );
+      } catch {
+        // ignore
+      }
+
+      try {
+        pickerSell.hass = hass;
+      } catch {
+        // ignore
+      }
+
+      try {
+        pickerSell.value = sellEntity;
+      } catch {
+        // ignore
+      }
+
+      pickerSell.addEventListener("value-changed", (ev) => {
+        const v = ev?.detail?.value ?? ev?.target?.value;
+        this._valueChanged({ sell_entity: v || "" });
+      });
+    }
+
     const useTomorrowEl = this.shadowRoot.querySelector("input.use-tomorrow");
     if (useTomorrowEl) {
       useTomorrowEl.onchange = (e) => {
         this._valueChanged({ use_tomorrow_entity: !!e.target.checked });
+        this._render();
+      };
+    }
+
+    const useSellEl = this.shadowRoot.querySelector("input.use-sell");
+    if (useSellEl) {
+      useSellEl.onchange = (e) => {
+        this._valueChanged({ use_sell_entity: !!e.target.checked });
         this._render();
       };
     }
