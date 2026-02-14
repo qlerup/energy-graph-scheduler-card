@@ -46,7 +46,7 @@ const EGS_I18N = {
     'editor.view_optional': 'View (optional)',
     'editor.view_label': 'What to show',
     'editor.view_show_all': 'Show all',
-    'editor.view_graph_minmax': 'Show graph + min/max',
+    'editor.view_graph_minmax': 'Show graph + min/now/highest',
     'editor.view_graph_only': 'Show graph only',
     'editor.entity_label': 'Electricity price entity',
     'editor.entity_picker': 'Select entity',
@@ -102,7 +102,7 @@ const EGS_I18N = {
     'editor.view_optional': 'Visning (valgfri)',
     'editor.view_label': 'Hvad skal vises',
     'editor.view_show_all': 'Vis alt',
-    'editor.view_graph_minmax': 'Vis graf + min/maks',
+    'editor.view_graph_minmax': 'Vis graf + min/nu/højeste',
     'editor.view_graph_only': 'Vis kun graf',
     'editor.entity_label': 'Strømpris entity',
     'editor.entity_picker': 'Vælg entity',
@@ -2003,8 +2003,9 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       ? config.display_mode
       : 'all';
     const showStats = displayMode === 'all' || displayMode === 'graph_minmax';
-    const showNowStat = displayMode === 'all';
+    const showNowStat = displayMode === 'all' || displayMode === 'graph_minmax';
     const showSections = displayMode === 'all';
+    const showTitle = displayMode === 'all';
 
     const lang = egsGetUiLang(config, hass);
     const t = (key, vars) => egsFormatTemplate(egsLocalize(key, config.language || hass), vars);
@@ -2314,13 +2315,16 @@ class EnergyGraphSchedulerCard extends HTMLElement {
           bodyHtml = `
             ${showStats ? `
             <div class="meta">
-              <div class="stats">
-                <span>${egsSafeText(t('stats.min'))}: <b>${minTxt}</b> ${egsSafeText(unit)}</span>
-                ${showNowStat ? `<span>${egsSafeText(t('stats.now'))}: <b>${nowTxt}</b> ${egsSafeText(unit)}</span>` : ''}
-                <span>${egsSafeText(t('stats.max'))}: <b>${maxTxt}</b> ${egsSafeText(unit)}</span>
+              <div class="meta-top${showTitle ? '' : ' no-title'}">
+                <div class="stats">
+                  <span>${egsSafeText(t('stats.min'))}: <b>${minTxt}</b> ${egsSafeText(unit)}</span>
+                  ${showNowStat ? `<span>${egsSafeText(t('stats.now'))}: <b>${nowTxt}</b> ${egsSafeText(unit)}</span>` : ''}
+                  <span>${egsSafeText(t('stats.max'))}: <b>${maxTxt}</b> ${egsSafeText(unit)}</span>
+                </div>
+                ${showTitle ? '' : `<button class="hdr-btn" data-act="open-settings">${egsSafeText(t('settings.open'))}</button>`}
               </div>
             </div>
-            ` : ''}
+            ` : `${showTitle ? '' : `<div class="meta meta-actions"><div class="meta-top no-title"><button class="hdr-btn" data-act="open-settings">${egsSafeText(t('settings.open'))}</button></div></div>`}`}
             <div class="graph">
               <div class="tooltip" hidden></div>
               <svg data-now-x="${nowXAttr}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="Price graph" style="width:${width}px; height:160px;">
@@ -2400,14 +2404,17 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       }
       ha-card{ overflow:hidden; box-sizing:border-box; width:100%; min-width:0; max-width:100%; }
       .wrap{ padding: 12px; min-width:0; }
-      .hdr{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding: 12px 12px 0 12px; }
-      .hdr-title{ color: var(--primary-text-color); font-size: 20px; font-weight: 600; line-height: 1.2; }
-      .hdr-btn{ appearance:none; border: 1px solid var(--divider-color); background: transparent; color: var(--primary-text-color); border-radius: 10px; padding: 6px 10px; font-size: 12px; cursor: pointer; }
+      .hdr{ display:flex; align-items:center; justify-content:flex-start; gap:10px; padding: 12px 12px 0 12px; }
+      .hdr-title{ color: var(--primary-text-color); font-size: 20px; font-weight: 600; line-height: 1.2; margin-right:auto; }
+      .hdr-btn{ appearance:none; border: 1px solid var(--divider-color); background: transparent; color: var(--primary-text-color); border-radius: 10px; padding: 6px 10px; font-size: 12px; cursor: pointer; margin-left:auto; }
       .hdr-btn:hover{ border-color: color-mix(in oklab, var(--primary-text-color) 20%, var(--divider-color)); }
       .hdr-btn:focus{ outline:none; border-color: var(--primary-color); box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary-color) 35%, transparent); }
       .hint{ color: var(--secondary-text-color); padding: 10px 2px; }
       .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
       .meta{ display:flex; flex-direction:column; gap:6px; margin-bottom: 8px; }
+      .meta-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+      .meta-top.no-title .stats{ flex:1; }
+      .meta-actions{ margin-bottom: 6px; }
       .name{ color: var(--primary-text-color); font-weight: 600; line-height: 1.2; }
       .stats{ display:flex; gap: 14px; flex-wrap: wrap; color: var(--secondary-text-color); font-size: 12px; }
       .stats b{ color: var(--primary-text-color); font-weight: 600; }
@@ -2545,10 +2552,9 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     this.shadowRoot.innerHTML = `
       <style>${css}</style>
       <ha-card>
-        <div class="hdr">
-          <div class="hdr-title">${title}</div>
-          <button class="hdr-btn" data-act="open-settings">${egsSafeText(t('settings.open'))}</button>
-        </div>
+        ${showTitle ? `<div class="hdr"><div class="hdr-title">${title}</div><button class="hdr-btn" data-act="open-settings">${egsSafeText(
+          t('settings.open')
+        )}</button></div>` : ''}
         <div class="wrap">${bodyHtml}</div>
       </ha-card>
       ${modalHtml}
