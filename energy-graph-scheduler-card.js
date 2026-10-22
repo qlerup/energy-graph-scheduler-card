@@ -1795,7 +1795,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
             type: `${EGS_SYNC_DOMAIN}/set_sections`,
             entity_id: ent,
             sections: local,
-          }).catch(() => {});
+          }).catch(() => { });
         }
       })
       .catch(() => {
@@ -1829,7 +1829,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
             type: `${EGS_SYNC_DOMAIN}/set_settings`,
             entity_id: ent,
             settings: { interval_minutes: curM },
-          }).catch(() => {});
+          }).catch(() => { });
         }
       })
       .catch(() => {
@@ -1849,7 +1849,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
     const hass = this._hass;
     if (!hass) return;
 
-    egsWsSend(hass, { type: `${EGS_SYNC_DOMAIN}/set_sections`, entity_id: ent, sections: next }).catch(() => {});
+    egsWsSend(hass, { type: `${EGS_SYNC_DOMAIN}/set_sections`, entity_id: ent, sections: next }).catch(() => { });
   }
 
   set hass(hass) {
@@ -1883,15 +1883,15 @@ class EnergyGraphSchedulerCard extends HTMLElement {
         : "__missing__";
       const keyTomorrow = tomorrowEntityId
         ? (stTomorrow
-            ? `${egsSafeText(stTomorrow.state)}|${egsSafeText(stTomorrow.last_updated)}|${egsSafeText(
-                stTomorrow.last_changed
-              )}`
-            : "__missing__")
+          ? `${egsSafeText(stTomorrow.state)}|${egsSafeText(stTomorrow.last_updated)}|${egsSafeText(
+            stTomorrow.last_changed
+          )}`
+          : "__missing__")
         : "__none__";
       const keySell = sellEntityId
         ? (stSell
-            ? `${egsSafeText(stSell.state)}|${egsSafeText(stSell.last_updated)}|${egsSafeText(stSell.last_changed)}`
-            : "__missing__")
+          ? `${egsSafeText(stSell.state)}|${egsSafeText(stSell.last_updated)}|${egsSafeText(stSell.last_changed)}`
+          : "__missing__")
         : "__none__";
       const key = `${keyToday}||${keyTomorrow}||${keySell}`;
 
@@ -2246,8 +2246,8 @@ class EnergyGraphSchedulerCard extends HTMLElement {
                 <g transform="translate(${lx.toFixed(2)}, ${ly.toFixed(2)})">
                   <rect x="-70" y="-14" width="140" height="20" rx="10" ry="10" class="nowpill" />
                   <text x="0" y="0" text-anchor="middle" dominant-baseline="middle" class="nowtext">${egsSafeText(
-                    label
-                  )}</text>
+              label
+            )}</text>
                 </g>
               </g>
             `;
@@ -2296,9 +2296,8 @@ class EnergyGraphSchedulerCard extends HTMLElement {
               const sellH = sellVal == null ? 0 : Math.max(0, sellBottom - sellTop);
               const sellR = Math.min(6, Math.max(0, sellW / 2 - 1), Math.max(0, sellH / 2));
               const sellValTxt = Number.isFinite(sellVal) ? sellVal.toFixed(3) : "";
-              const sellCls = `bar bar-sell${isNow ? " bar-now" : ""}${inSel ? " bar-mark" : ""}${
-                sellVal == null ? " bar-missing" : ""
-              }`;
+              const sellCls = `bar bar-sell${isNow ? " bar-now" : ""}${inSel ? " bar-mark" : ""}${sellVal == null ? " bar-missing" : ""
+                }`;
               const sellRect = `<rect x="${sellX.toFixed(2)}" y="${sellTop.toFixed(2)}" width="${sellW.toFixed(
                 2
               )}" height="${sellH.toFixed(2)}" rx="${sellR.toFixed(2)}" ry="${sellR.toFixed(
@@ -2307,6 +2306,61 @@ class EnergyGraphSchedulerCard extends HTMLElement {
                 sellLabel
               )}" data-unit="${egsSafeText(sellUnit)}" data-val="${sellValTxt}"${tsAttr} />`;
               return buyRect + sellRect;
+            })
+            .join("");
+
+          // Full-height hitboxes to make tapping easy on mobile.
+          // One per step for buy; if sell overlay is enabled, add a second hitbox for sell half.
+          const hitTop = pad.top;
+          const hitH = height - pad.top - pad.bottom;
+
+          const hitboxes = bars.pts
+            .map((p, i) => {
+              const tsAttr = p.ts != null ? ` data-ts="${Number(p.ts)}"` : "";
+              const buyLabel = egsSafeText(t('label.buy'));
+              const sellLabel = egsSafeText(t('label.sell'));
+
+              if (!hasSellOverlay) {
+                const valTxt = Number.isFinite(p.value) ? p.value.toFixed(3) : "";
+                return `
+                  <rect class="hitbox"
+                    x="${p.x.toFixed(2)}" y="${hitTop.toFixed(2)}"
+                    width="${p.w.toFixed(2)}" height="${hitH.toFixed(2)}"
+                    data-hit="1" data-idx="${i}" data-series="buy"
+                    data-series-label="${buyLabel}"
+                    data-unit="${egsSafeText(unit)}"
+                    data-val="${valTxt}"${tsAttr}
+                  />
+                `;
+              }
+
+              // split hitboxes (buy left, sell right)
+              const splitGap = 2;
+              const buyW = Math.max(1, (p.w - splitGap) / 2);
+              const sellW = buyW;
+
+              const buyValTxt = Number.isFinite(p.value) ? p.value.toFixed(3) : "";
+              const sellVal = sellValues[i];
+              const sellValTxt = Number.isFinite(sellVal) ? sellVal.toFixed(3) : "";
+
+              return `
+                <rect class="hitbox"
+                  x="${p.x.toFixed(2)}" y="${hitTop.toFixed(2)}"
+                  width="${buyW.toFixed(2)}" height="${hitH.toFixed(2)}"
+                  data-hit="1" data-idx="${i}" data-series="buy"
+                  data-series-label="${buyLabel}"
+                  data-unit="${egsSafeText(unit)}"
+                  data-val="${buyValTxt}"${tsAttr}
+                />
+                <rect class="hitbox"
+                  x="${(p.x + p.w - sellW).toFixed(2)}" y="${hitTop.toFixed(2)}"
+                  width="${sellW.toFixed(2)}" height="${hitH.toFixed(2)}"
+                  data-hit="1" data-idx="${i}" data-series="sell"
+                  data-series-label="${sellLabel}"
+                  data-unit="${egsSafeText(sellUnit)}"
+                  data-val="${sellValTxt}"${tsAttr}
+                />
+              `;
             })
             .join("");
 
@@ -2351,6 +2405,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
                 ${gridLines.join("")}
                 ${baseline}
                 ${rects}
+                ${hitboxes}
                 ${marks}
                 ${nowMarker}
               </svg>
@@ -2493,6 +2548,20 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       .item span{ color: var(--secondary-text-color); font-size: 12px; }
       .checkrow{ display:flex; align-items:center; gap: 10px; padding: 8px 10px; border: 1px solid var(--divider-color); border-radius: 12px; }
       .checkrow input{ width: 18px; height: 18px; }
+      /* Big transparent tap targets */
+      .hitbox{
+        fill: transparent;
+        pointer-events: all;
+      }
+
+      /* Make taps feel responsive on mobile */
+      .graph{
+        touch-action: pan-x; /* allow horizontal scroll, still enables taps */
+      }
+      .graph svg{
+        -webkit-tap-highlight-color: transparent;
+        touch-action: pan-x;
+      }
     `;
 
     const modalHtml = (() => {
@@ -2553,8 +2622,8 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       <style>${css}</style>
       <ha-card>
         ${showTitle ? `<div class="hdr"><div class="hdr-title">${title}</div><button class="hdr-btn" data-act="open-settings">${egsSafeText(
-          t('settings.open')
-        )}</button></div>` : ''}
+      t('settings.open')
+    )}</button></div>` : ''}
         <div class="wrap">${bodyHtml}</div>
       </ha-card>
       ${modalHtml}
@@ -2640,39 +2709,64 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       const svg = graph?.querySelector("svg");
       const tip = graph?.querySelector(".tooltip");
       if (graph && svg && tip) {
-        const setTip = (clientX, clientY, idx, valStr, tsStr, seriesLabel, valueUnit) => {
+        const setTip = (clientX, clientY, idx, valStr, tsStr, seriesLabel, valueUnit, anchorRect) => {
           const i = Math.max(0, Number(idx) || 0);
           const hasVal = !!valStr;
           const ts = tsStr != null && tsStr !== "" ? Number(tsStr) : null;
           const seriesTxt = egsSafeText(seriesLabel || "");
           const unitTxt = egsSafeText(valueUnit || unit);
+
           const time =
             Number.isFinite(ts) && ts != null
               ? egsFormatRangeByTs(ts, 1, Date.now(), lang)
               : egsFormatHourRange(i % 24, 1);
+
           tip.innerHTML = hasVal
-            ? `<div class="t-time">${egsSafeText(time)}</div><div class="t-val">${
-                seriesTxt ? `<span class="t-series">${seriesTxt}</span>` : ""
-              }${egsSafeText(valStr)}<span class="t-unit">${unitTxt}</span></div>`
+            ? `<div class="t-time">${egsSafeText(time)}</div><div class="t-val">${seriesTxt ? `<span class="t-series">${seriesTxt}</span>` : ""
+            }${egsSafeText(valStr)}<span class="t-unit">${unitTxt}</span></div>`
             : `<div class="t-time">${egsSafeText(time)}</div><div class="t-val muted">${egsSafeText(t('label.no_data'))}</div>`;
 
           const r = graph.getBoundingClientRect();
-          const x = clientX - r.left;
-          const y = clientY - r.top;
 
-          // Clamp in *visible viewport* coords
+          // Anchor to the hitbox (preferred). Fallback to pointer coordinates.
+          let anchorX = clientX;
+          let anchorY = clientY;
+
+          if (anchorRect) {
+            anchorX = anchorRect.left + anchorRect.width / 2;
+            anchorY = anchorRect.top; // top edge of the hitbox
+          }
+
+          // Convert viewport coords -> graph local coords
+          const x = anchorX - r.left;
+          const y = anchorY - r.top;
+
+          // Clamp within visible viewport
           const cx = egsClamp(x, 12, r.width - 12);
           const cy = egsClamp(y, 12, r.height - 12);
 
-          // Convert to *scroll content* coords (tooltip is inside the scroller!)
-          const sx = (graph.scrollLeft || 0);
-          const sy = (graph.scrollTop || 0);
+          // Convert to scroll content coords (tooltip is inside the scroller)
+          const sx = graph.scrollLeft || 0;
+          const sy = graph.scrollTop || 0;
 
           tip.style.left = `${cx + sx}px`;
           tip.style.top = `${cy + sy}px`;
-          
-          tip.style.transform = cy < 42 ? "translate(-50%, 16px)" : "translate(-50%, -120%)";
+
+          // Always show above the target
+          tip.style.transform = "translate(-50%, -120%)";
           tip.hidden = false;
+
+          requestAnimationFrame(() => {
+            try {
+              const tipH = tip.offsetHeight || 0;
+              const curTop = parseFloat(tip.style.top || "0");
+              const minTop = 6 + (graph.scrollTop || 0);
+              if (curTop - tipH < minTop) {
+                tip.style.top = `${minTop + tipH}px`;
+                tip.style.transform = "translate(-50%, -100%)";
+              }
+            } catch { }
+          });
         };
 
         const hideTip = () => {
@@ -2681,27 +2775,51 @@ class EnergyGraphSchedulerCard extends HTMLElement {
 
         // Bind to bars directly so the tooltip doesn't flicker when the pointer
         // briefly hits the SVG background/labels.
-        const bars = svg.querySelectorAll('rect[data-idx]');
-        bars.forEach((bar) => {
-          bar.onpointerenter = (ev) => {
-            const idx = bar.getAttribute("data-idx");
-            const valStr = bar.getAttribute("data-val") || "";
-            const tsStr = bar.getAttribute("data-ts") || "";
-            const seriesLabel = bar.getAttribute("data-series-label") || "";
-            const valueUnit = bar.getAttribute("data-unit") || unit;
-            setTip(ev.clientX, ev.clientY, idx, valStr, tsStr, seriesLabel, valueUnit);
+        const targets = svg.querySelectorAll('rect[data-hit="1"]');
+
+        let hideTimer = null;
+        const hideTipSoon = (ms = 250) => {
+          if (hideTimer) clearTimeout(hideTimer);
+          hideTimer = setTimeout(() => {
+            tip.hidden = true;
+          }, ms);
+        };
+
+        const showFromEl = (ev, el) => {
+          if (!el) return;
+          if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+
+          try { el.setPointerCapture?.(ev.pointerId); } catch { }
+
+          const idx = el.getAttribute("data-idx");
+          const valStr = el.getAttribute("data-val") || "";
+          const tsStr = el.getAttribute("data-ts") || "";
+          const seriesLabel = el.getAttribute("data-series-label") || "";
+          const valueUnit = el.getAttribute("data-unit") || unit;
+
+          const rect = el.getBoundingClientRect();
+          setTip(ev.clientX, ev.clientY, idx, valStr, tsStr, seriesLabel, valueUnit, rect);
+        };
+
+        targets.forEach((el) => {
+          // Desktop/mouse hover (still useful)
+          el.onpointerenter = (ev) => showFromEl(ev, el);
+          el.onpointermove = (ev) => showFromEl(ev, el);
+
+          // Mobile tap
+          el.onpointerdown = (ev) => {
+            // prevent a quick tap from being treated as “start scroll” by some browsers
+            // (still allows pan-x because of touch-action)
+            ev.preventDefault?.();
+            showFromEl(ev, el);
           };
-          bar.onpointermove = (ev) => {
-            const idx = bar.getAttribute("data-idx");
-            const valStr = bar.getAttribute("data-val") || "";
-            const tsStr = bar.getAttribute("data-ts") || "";
-            const seriesLabel = bar.getAttribute("data-series-label") || "";
-            const valueUnit = bar.getAttribute("data-unit") || unit;
-            setTip(ev.clientX, ev.clientY, idx, valStr, tsStr, seriesLabel, valueUnit);
-          };
-          bar.onpointerleave = hideTip;
-          bar.onpointerdown = hideTip;
+
+          el.onpointerup = () => hideTipSoon(900);      // keep visible briefly after release
+          el.onpointercancel = () => hideTipSoon(100);
+          el.onpointerleave = () => hideTipSoon(100);
         });
+
+        svg.onpointerleave = () => hideTipSoon(100);
 
         svg.onpointerleave = hideTip;
       }
@@ -2752,7 +2870,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
                   type: `${EGS_SYNC_DOMAIN}/set_settings`,
                   entity_id: entityId,
                   settings: { interval_minutes: this._intervalMinutes },
-                }).catch(() => {});
+                }).catch(() => { });
               }
             } catch {
               // ignore
@@ -3007,7 +3125,7 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
       cs: 'Čeština',
       sl: 'Slovenščina',
     };
-    const supportedLangs = ['en','da','sv','nb','de','es','fr','it','fi','cs','sl'];
+    const supportedLangs = ['en', 'da', 'sv', 'nb', 'de', 'es', 'fr', 'it', 'fi', 'cs', 'sl'];
     const langOptions = [
       `<option value="" ${language === '' ? 'selected' : ''}>${egsSafeText(t('editor.language_auto'))}</option>`,
       ...supportedLangs.map((code) => {
@@ -3091,8 +3209,8 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
             <div class="sub sub-tomorrow ${useTomorrowEntity ? '' : 'disabled'}">
               <div class="label">${egsSafeText(t('editor.tomorrow_entity_label'))}</div>
               <tt-entity-picker class="picker-tomorrow" ${useTomorrowEntity ? '' : 'disabled'} label="${egsSafeText(
-                t('editor.tomorrow_entity_picker')
-              )}" include-domains='["sensor","binary_sensor"]'></tt-entity-picker>
+      t('editor.tomorrow_entity_picker')
+    )}" include-domains='["sensor","binary_sensor"]'></tt-entity-picker>
             </div>
           </div>
         </div>
@@ -3109,8 +3227,8 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
             <div class="sub sub-sell ${useSellEntity ? '' : 'disabled'}">
               <div class="label">${egsSafeText(t('editor.sell_entity_label'))}</div>
               <tt-entity-picker class="picker-sell" ${useSellEntity ? '' : 'disabled'} label="${egsSafeText(
-                t('editor.sell_entity_picker')
-              )}" include-domains='["sensor","binary_sensor"]'></tt-entity-picker>
+      t('editor.sell_entity_picker')
+    )}" include-domains='["sensor","binary_sensor"]'></tt-entity-picker>
             </div>
           </div>
         </div>
