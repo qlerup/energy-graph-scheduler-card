@@ -109,6 +109,16 @@ entity: sensor.your_electricity_price_sensor
 
 ## Expected data format (sensor attributes)
 
+### ENTSO-e Transparency Platform
+
+Select the integration's **Average electricity price** sensor, for example
+`sensor.token2_average_electricity_price`. Only that sensor supplies the full
+`prices`, `prices_today` and `prices_tomorrow` attributes. The **Current electricity
+market price** and **Next hour** sensors only expose individual prices and cannot
+provide a forward-looking graph or cheapest-window calculation.
+
+See the [upstream sensor implementation](https://github.com/JaccoR/hass-entso-e/blob/main/custom_components/entsoe/sensor.py).
+
 The card tries to be robust across different electricity price integrations.
 
 It looks for an array/list in the entity attributes under common keys such as:

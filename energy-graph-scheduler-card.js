@@ -3,7 +3,7 @@
 
 const EGS_CARD_TAG = "energy-graph-scheduler-card";
 const EGS_EDITOR_TAG = "energy-graph-scheduler-card-editor";
-const EGS_CARD_VERSION = "0.1.3";
+const EGS_CARD_VERSION = "1.4.1";
 const EGS_SYNC_DOMAIN = "energy_graph_scheduler";
 
 // ---- energy-graph-scheduler i18n (namespaced) ----
@@ -824,8 +824,8 @@ function egsExtractSeries(stateObj, mode) {
   const m = (mode || 'combined').toString();
 
   // Prefer combining today + tomorrow when available (common for electricity price sensors).
-  const todayKeys = ["raw_today", "today", "prices", "price", "data", "values"];
-  const tomorrowKeys = ["raw_tomorrow", "tomorrow"];
+  const todayKeys = ["raw_today", "today", "prices_today", "prices", "price", "data", "values"];
+  const tomorrowKeys = ["raw_tomorrow", "tomorrow", "prices_tomorrow"];
 
   let todayRaw = null;
   for (const key of todayKeys) {
@@ -2556,11 +2556,11 @@ class EnergyGraphSchedulerCard extends HTMLElement {
 
       /* Make taps feel responsive on mobile */
       .graph{
-        touch-action: pan-x; /* allow horizontal scroll, still enables taps */
+        touch-action: pan-x pan-y; /* preserve native dashboard scrolling */
       }
       .graph svg{
         -webkit-tap-highlight-color: transparent;
-        touch-action: pan-x;
+        touch-action: pan-x pan-y;
       }
     `;
 
@@ -2789,8 +2789,6 @@ class EnergyGraphSchedulerCard extends HTMLElement {
           if (!el) return;
           if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
 
-          try { el.setPointerCapture?.(ev.pointerId); } catch { }
-
           const idx = el.getAttribute("data-idx");
           const valStr = el.getAttribute("data-val") || "";
           const tsStr = el.getAttribute("data-ts") || "";
@@ -2808,20 +2806,16 @@ class EnergyGraphSchedulerCard extends HTMLElement {
 
           // Mobile tap
           el.onpointerdown = (ev) => {
-            // prevent a quick tap from being treated as “start scroll” by some browsers
-            // (still allows pan-x because of touch-action)
-            ev.preventDefault?.();
             showFromEl(ev, el);
           };
 
-          el.onpointerup = () => hideTipSoon(900);      // keep visible briefly after release
+          el.onpointerup = (ev) => { if (ev.pointerType !== 'mouse') hideTipSoon(2500); };
           el.onpointercancel = () => hideTipSoon(100);
-          el.onpointerleave = () => hideTipSoon(100);
+          el.onpointerleave = (ev) => { if (ev.pointerType === 'mouse') hideTipSoon(100); };
         });
 
-        svg.onpointerleave = () => hideTipSoon(100);
-
-        svg.onpointerleave = hideTip;
+        svg.onpointerleave = (ev) => { if (ev.pointerType === 'mouse') hideTipSoon(100); };
+        graph.onscroll = hideTip;
       }
     } catch {
       // ignore
