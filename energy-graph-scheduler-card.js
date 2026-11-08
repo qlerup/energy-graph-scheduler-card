@@ -3,7 +3,7 @@
 
 const EGS_CARD_TAG = "energy-graph-scheduler-card";
 const EGS_EDITOR_TAG = "energy-graph-scheduler-card-editor";
-const EGS_CARD_VERSION = "1.4.1";
+const EGS_CARD_VERSION = "1.5.0";
 const EGS_SYNC_DOMAIN = "energy_graph_scheduler";
 
 // ---- energy-graph-scheduler i18n (namespaced) ----
