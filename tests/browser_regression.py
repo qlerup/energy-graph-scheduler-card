@@ -41,5 +41,28 @@ with sync_playwright() as p:
     assert '0.001' in tip.inner_text(),tip.inner_text()
     page.screenshot(path=str(ROOT/'tests/energy-touch.png'))
     print('PASS: full-height mobile tap target; tooltip persists after release')
+    page.evaluate('''() => {
+      const card = document.querySelector('energy-graph-scheduler-card');
+      card.setConfig({entity:'sensor.prices', sync:false, severity:[{from:0,to:1,color:'red'}]});
+    }''')
+    assert page.locator('energy-graph-scheduler-card rect.bar-severity').first.evaluate(
+        "el => getComputedStyle(el).fill") == 'rgb(255, 0, 0)'
+    page.evaluate('''() => {
+      const editor = document.createElement('energy-graph-scheduler-card-editor');
+      editor.setConfig({entity:'sensor.prices', severity:[
+        {from:0,to:1,color:'red'}, {from:1,to:2,color:'blue'}]});
+      document.body.replaceChildren(editor);
+    }''')
+    editor = page.locator('energy-graph-scheduler-card-editor')
+    editor.locator('.sev-to').nth(0).fill('4')
+    editor.locator('.sev-from').nth(0).fill('3')
+    editor.locator('.sev-from').nth(0).press('Tab')
+    editor.locator('.sev-del').nth(0).click()
+    assert editor.evaluate('el => el.value.severity') == [{'from':1,'to':2,'color':'blue'}]
+    assert editor.locator('.sev-row').count() == 1
+    editor.evaluate('el => el.setConfig({severity:[{from:-1,to:0,color:"#00ff00"}]})')
+    assert editor.locator('.sev-from').input_value() == '-1'
+    assert editor.locator('.sev-color-text').input_value() == '#00ff00'
+    print('PASS: bracket rendering, edited-row deletion and external editor configuration')
     browser.close()
 server.shutdown()

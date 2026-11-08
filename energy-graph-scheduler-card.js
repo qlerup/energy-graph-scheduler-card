@@ -64,6 +64,14 @@ const EGS_I18N = {
     'editor.sync_optional': 'Sync (optional)',
     'editor.sync_title': 'Share “cheapest times” between users',
     'editor.sync_desc': 'Store in Home Assistant (.storage) via integration',
+
+    'editor.severity_title': 'Color brackets',
+    'editor.severity_desc': 'Choose colors for price ranges (from/to). First match wins.',
+    'editor.severity_add': 'Add bracket',
+    'editor.severity_from': 'From',
+    'editor.severity_to': 'To',
+    'editor.severity_color': 'Color',
+    'editor.severity_none': 'No brackets yet.',
   },
   da: {
     'card.title_default': 'Energy Graph Scheduler',
@@ -120,6 +128,14 @@ const EGS_I18N = {
     'editor.sync_optional': 'Sync (valgfri)',
     'editor.sync_title': 'Del "billigste tider" mellem brugere',
     'editor.sync_desc': 'Gem i Home Assistant (.storage) via integration',
+
+    'editor.severity_title': 'Farveintervaller',
+    'editor.severity_desc': 'Vælg farver for prisintervaller (fra/til). Første match vinder.',
+    'editor.severity_add': 'Tilføj interval',
+    'editor.severity_from': 'Fra',
+    'editor.severity_to': 'Til',
+    'editor.severity_color': 'Farve',
+    'editor.severity_none': 'Ingen intervaller endnu.',
   },
   sv: {
     'card.title_default': 'Energigraf-schemaläggare',
@@ -1195,6 +1211,52 @@ function egsNormalizeSettings(raw) {
   return { interval_minutes };
 }
 
+// ---- Severity / Color brackets helpers ----
+function egsNormalizeColor(c) {
+  const s = egsSafeText(c).trim();
+  if (!s) return null;
+
+  // Common typo fix: "##xxxxxx"
+  const fixed = s.startsWith("##") ? `#${s.slice(2)}` : s;
+
+  // Only accept color syntax safe to embed in SVG and input attributes.
+  // In particular, reject URLs, quotes and extra CSS declarations.
+  const safe = /^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(fixed)
+    || /^[a-z]+$/i.test(fixed)
+    || /^(?:rgba?|hsla?)\([0-9.,%+\-\s/]+\)$/i.test(fixed)
+    || /^var\(--[a-z0-9_-]+\)$/i.test(fixed);
+  if (!safe) return null;
+  if (globalThis.CSS?.supports && !CSS.supports('color', fixed)) return null;
+  return fixed;
+}
+
+function egsNormalizeSeverity(raw) {
+  if (!Array.isArray(raw)) return [];
+  const out = [];
+  for (const row of raw) {
+    if (!row || typeof row !== "object") continue;
+    const from = egsAsNumber(row.from);
+    const to = egsAsNumber(row.to);
+    const color = egsNormalizeColor(row.color);
+    if (from == null || to == null || !color) continue;
+    if (to <= from) continue;
+    out.push({ from, to, color });
+  }
+  // Preserve configured order: the first matching bracket wins.
+  return out.slice(0, 30);
+}
+
+// First match wins. Inclusive from, exclusive to.
+function egsSeverityColor(value, severity) {
+  if (!Number.isFinite(value)) return null;
+  const list = Array.isArray(severity) ? severity : [];
+  for (const s of list) {
+    if (value >= s.from && value < s.to) return s.color;
+  }
+  return null;
+}
+// ---- end severity helpers ----
+
 function egsNormalizeSections(raw) {
   if (!Array.isArray(raw)) return [];
   const out = [];
@@ -1442,6 +1504,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       display_mode: "all", // all | graph_minmax | graph_only
       sync: false,
       language: "", // "" = auto (Home Assistant)
+      severity: [], // [{ from:number, to:number, color:string }]
     };
   }
 
@@ -1469,6 +1532,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
         : stub.display_mode,
       sync: !!config.sync,
       language: typeof config.language === 'string' ? config.language : stub.language,
+      severity: egsNormalizeSeverity(config.severity),
       // Never lose type
       type: config.type || stub.type,
     };
@@ -2187,6 +2251,8 @@ class EnergyGraphSchedulerCard extends HTMLElement {
             .join("");
 
           const tiers = egsComputeTiers(bars.pts.map((p) => p.value));
+          const severity = egsNormalizeSeverity(config.severity);
+          const hasSeverity = severity.length > 0;
 
           const secsForSel = Array.isArray(this._sections) ? this._sections : [];
           const selIdxRaw = this._selectedSectionIdx;
@@ -2275,15 +2341,17 @@ class EnergyGraphSchedulerCard extends HTMLElement {
               const buyX = p.x;
               const sellX = hasSellOverlay ? p.x + p.w - sellW : p.x;
 
-              const tier = egsTierClass(p.value, tiers);
+              const sevColor = hasSeverity ? egsSeverityColor(p.value, severity) : null;
+              const tier = sevColor ? "bar-severity" : egsTierClass(p.value, tiers);
               const buyCls = `bar ${tier}${isNow ? " bar-now" : ""}${inSel ? " bar-mark" : ""}`;
               const buyR = Math.min(6, Math.max(0, buyW / 2 - 1), Math.max(0, p.h / 2));
               const buyValTxt = Number.isFinite(p.value) ? p.value.toFixed(3) : "";
               const tsAttr = p.ts != null ? ` data-ts="${Number(p.ts)}"` : "";
+              const buyStyle = sevColor ? ` style="fill:${sevColor}; opacity:0.92;"` : "";
 
               const buyRect = `<rect x="${buyX.toFixed(2)}" y="${p.y.toFixed(2)}" width="${buyW.toFixed(2)}" height="${p.h.toFixed(
                 2
-              )}" rx="${buyR.toFixed(2)}" ry="${buyR.toFixed(2)}" class="${buyCls}" data-idx="${i}" data-series="buy" data-series-label="${egsSafeText(
+              )}" rx="${buyR.toFixed(2)}" ry="${buyR.toFixed(2)}"${buyStyle} class="${buyCls}" data-idx="${i}" data-series="buy" data-series-label="${egsSafeText(
                 buyLabel
               )}" data-unit="${egsSafeText(unit)}" data-val="${buyValTxt}"${tsAttr} />`;
 
@@ -2297,7 +2365,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
               const sellR = Math.min(6, Math.max(0, sellW / 2 - 1), Math.max(0, sellH / 2));
               const sellValTxt = Number.isFinite(sellVal) ? sellVal.toFixed(3) : "";
               const sellCls = `bar bar-sell${isNow ? " bar-now" : ""}${inSel ? " bar-mark" : ""}${sellVal == null ? " bar-missing" : ""
-                }`;
+              }`;
               const sellRect = `<rect x="${sellX.toFixed(2)}" y="${sellTop.toFixed(2)}" width="${sellW.toFixed(
                 2
               )}" height="${sellH.toFixed(2)}" rx="${sellR.toFixed(2)}" ry="${sellR.toFixed(
@@ -2500,6 +2568,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
       .bar-low{ fill: url(#egsFillLow); }
       .bar-mid{ fill: url(#egsFillMid); }
       .bar-high{ fill: url(#egsFillHigh); }
+      .bar-severity{ fill: var(--primary-color); }
       .bar-sell{ fill: url(#egsFillSell); }
       .bar-now{ opacity: 1; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25)); }
       .bar-missing{ opacity: 0; pointer-events:none; }
@@ -2723,7 +2792,7 @@ class EnergyGraphSchedulerCard extends HTMLElement {
 
           tip.innerHTML = hasVal
             ? `<div class="t-time">${egsSafeText(time)}</div><div class="t-val">${seriesTxt ? `<span class="t-series">${seriesTxt}</span>` : ""
-            }${egsSafeText(valStr)}<span class="t-unit">${unitTxt}</span></div>`
+              }${egsSafeText(valStr)}<span class="t-unit">${unitTxt}</span></div>`
             : `<div class="t-time">${egsSafeText(time)}</div><div class="t-val muted">${egsSafeText(t('label.no_data'))}</div>`;
 
           const r = graph.getBoundingClientRect();
@@ -2933,6 +3002,7 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
   }
 
   setConfig(config) {
+    const previousSeverity = JSON.stringify(this._config?.severity || []);
     const stub = EnergyGraphSchedulerCard.getStubConfig();
     this._config = {
       ...stub,
@@ -2950,8 +3020,9 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
         : stub.display_mode,
       sync: !!(config && config.sync),
       language: typeof (config && config.language) === 'string' ? config.language : stub.language,
+      severity: egsNormalizeSeverity((config && config.severity) || []),
     };
-    if (this._loaded) this._applyConfigToUi();
+    if (this._loaded && previousSeverity === JSON.stringify(this._config.severity)) this._applyConfigToUi();
     else this._render();
   }
 
@@ -3127,6 +3198,26 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
         return `<option value="${code}" ${language === code ? 'selected' : ''}>${egsSafeText(label)} (${code})</option>`;
       }),
     ].join('');
+    const severity = egsNormalizeSeverity(this._config?.severity || []);
+    const sevRows = severity
+      .map((s, idx) => `
+      <div class="sev-row" data-sev-idx="${idx}">
+        <div class="sev-field">
+          <div class="label">${egsSafeText(t('editor.severity_from'))}</div>
+          <input class="sev-from" type="number" step="0.01" value="${s.from}" />
+        </div>
+        <div class="sev-field">
+          <div class="label">${egsSafeText(t('editor.severity_to'))}</div>
+          <input class="sev-to" type="number" step="0.01" value="${s.to}" />
+        </div>
+        <div class="sev-field sev-color">
+          <div class="label">${egsSafeText(t('editor.severity_color'))}</div>
+          <input class="sev-color-input" type="color" value="${/^#[0-9a-f]{6}$/i.test(s.color) ? s.color : "#ffffff"}" />
+          <input class="sev-color-text" type="text" value="${egsSafeText(s.color)}" />
+        </div>
+        <button class="btn sev-del" data-act="sev-del" data-idx="${idx}">✕</button>
+      </div>
+    `).join("");
 
     const css = `
       :host{ display:block; padding: 8px 0; }
@@ -3151,6 +3242,13 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
       input.sync{ width:18px; height:18px; margin:0; }
       input.use-tomorrow{ width:18px; height:18px; margin:0; }
       input.use-sell{ width:18px; height:18px; margin:0; }
+      .sev-list{ display:flex; flex-direction:column; gap:10px; }
+      .sev-row{ display:grid; grid-template-columns: 1fr 1fr 2fr auto; gap:10px; align-items:end; padding: 10px; border:1px solid var(--divider-color); border-radius: 12px; }
+      .sev-field{ display:flex; flex-direction:column; gap:6px; }
+      .sev-color{ display:grid; grid-template-columns: 56px 1fr; gap:10px; align-items:end; }
+      .sev-color-input{ width:56px; height:36px; padding:0; border-radius:8px; border:1px solid var(--divider-color); background: transparent; }
+      .sev-color-text{ width:100%; }
+      .sev-del{ height:36px; width:42px; padding:0; border-radius:10px; }
     `;
 
     this.shadowRoot.innerHTML = `
@@ -3223,6 +3321,23 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
               <tt-entity-picker class="picker-sell" ${useSellEntity ? '' : 'disabled'} label="${egsSafeText(
       t('editor.sell_entity_picker')
     )}" include-domains='["sensor","binary_sensor"]'></tt-entity-picker>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="label">${egsSafeText(t('editor.severity_title'))}</div>
+          <div class="box">
+            <div class="boxhdr">
+              <div class="txt">
+                <div class="t1">${egsSafeText(t('editor.severity_title'))}</div>
+                <div class="t2">${egsSafeText(t('editor.severity_desc'))}</div>
+              </div>
+              <button class="btn" data-act="sev-add">${egsSafeText(t('editor.severity_add'))}</button>
+            </div>
+            <div class="content">
+              <div class="sev-list">
+                ${sevRows || `<div class="t2">${egsSafeText(t('editor.severity_none'))}</div>`}
+              </div>
             </div>
           </div>
         </div>
@@ -3437,6 +3552,81 @@ class EnergyGraphSchedulerCardEditor extends HTMLElement {
     if (syncEl) {
       syncEl.onchange = (e) => this._valueChanged({ sync: !!e.target.checked });
     }
+
+    // ---- Severity editor wiring ----
+    const sevAddBtn = this.shadowRoot.querySelector('[data-act="sev-add"]');
+    if (sevAddBtn) {
+      sevAddBtn.onclick = () => {
+        const cur = egsNormalizeSeverity(this._config?.severity || []);
+        // Default: extend last bracket or start at 0-1 with green
+        const last = cur.length ? cur[cur.length - 1] : null;
+        const from = last ? Number(last.to) : 0;
+        const to = last ? Number(last.to) + 0.2 : 1;
+        cur.push({ from, to, color: last?.color || "#42A047" });
+        this._valueChanged({ severity: cur });
+        this._render();
+      };
+    }
+
+    const syncSeverityFromDom = () => {
+      const rows = Array.from(this.shadowRoot.querySelectorAll('.sev-row'));
+      const next = [];
+      for (const row of rows) {
+        const fromEl = row.querySelector('.sev-from');
+        const toEl = row.querySelector('.sev-to');
+        const colText = row.querySelector('.sev-color-text');
+        const colPick = row.querySelector('.sev-color-input');
+
+        const from = egsAsNumber(fromEl?.value);
+        const to = egsAsNumber(toEl?.value);
+
+        // Prefer text field if user typed a value, else fallback to picker.
+        const rawColor = egsSafeText(colText?.value).trim() || egsSafeText(colPick?.value).trim();
+        const color = egsNormalizeColor(rawColor);
+
+        if (from == null || to == null || !color) continue;
+        if (to <= from) continue;
+        next.push({ from, to, color });
+      }
+      this._valueChanged({ severity: next });
+    };
+
+    // Keep color picker <-> text in sync and write back to config.
+    this.shadowRoot.querySelectorAll('.sev-row').forEach((row) => {
+      const fromEl = row.querySelector('.sev-from');
+      const toEl = row.querySelector('.sev-to');
+      const colPick = row.querySelector('.sev-color-input');
+      const colText = row.querySelector('.sev-color-text');
+
+      const onAny = () => {
+        // Mirror: if text becomes a valid hex, reflect it to color input.
+        const c = egsNormalizeColor(colText?.value);
+        if (c && /^#([0-9a-fA-F]{6})$/.test(c) && colPick) colPick.value = c;
+        syncSeverityFromDom();
+      };
+
+      if (fromEl) fromEl.onchange = onAny;
+      if (toEl) toEl.onchange = onAny;
+
+      if (colPick) {
+        colPick.oninput = () => {
+          if (colText) colText.value = colPick.value;
+          syncSeverityFromDom();
+        };
+      }
+      if (colText) colText.onchange = onAny;
+
+      const delBtn = row.querySelector('[data-act="sev-del"]');
+      if (delBtn) {
+        delBtn.onclick = () => {
+          // Use the visible row, not an index into a filtered/normalized list.
+          row.remove();
+          syncSeverityFromDom();
+          this._render();
+        };
+      }
+    });
+    // ---- end severity editor wiring ----
 
     this._loaded = true;
   }
